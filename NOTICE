@@ -1,0 +1,12 @@
+Erdos 1045 formalization
+Copyright 2026 Boyang Hu
+
+The Comparator runner and Landrun adapter in scripts/ are adapted from
+PalomarRegistry/PalomarTemplate at d06eea17a234d0936798a78fa23f8a69e80374a7
+(Apache-2.0). The runner is adjusted for Lean 4.33.0 and uses an isolated
+systemd scope when running Comparator.
+Mathlib and other fetched dependencies retain their own licences and notices.
+
+The comparison criterion in scripts/CompareSurface.lean follows
+Comparator.Compare, Copyright 2025 Lean FRO, LLC (Apache-2.0), by Henrik Boving.
+It is a local compiled-environment diagnostic, not the independent checker.

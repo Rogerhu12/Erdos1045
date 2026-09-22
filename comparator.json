@@ -1,0 +1,22 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Solution",
+  "theorem_names": [
+    "Erdos1045.main"
+  ],
+  "definition_names": [
+    "Erdos1045.Statement.evenThreshold",
+    "Erdos1045.Statement.regularThreshold",
+    "Erdos1045.Statement.diameterThreshold",
+    "Erdos1045.Statement.DiameterCharacterization",
+    "Erdos1045.Statement.PerimeterCharacterization",
+    "Erdos1045.Statement.Algebraic.CertificateAboveThreshold",
+    "Erdos1045.Statement.KKT.UniquePositiveKKT"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "enable_nanoda": true
+}

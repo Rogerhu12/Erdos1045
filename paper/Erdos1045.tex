@@ -1,0 +1,2509 @@
+\documentclass[11pt,reqno]{amsart}
+\usepackage[a4paper,left=27mm,right=27mm,top=25mm,bottom=26mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools,mathrsfs,bm}
+\usepackage{microtype,booktabs,array,longtable,enumitem}
+\usepackage[hidelinks,bookmarksnumbered]{hyperref}
+\numberwithin{equation}{section}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\R}{\mathbb R}
+\newcommand{\C}{\mathbb C}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\T}{\mathbb T}
+\newcommand{\D}{\mathbb D}
+\newcommand{\A}{\mathcal A}
+\newcommand{\B}{\mathcal B}
+\newcommand{\E}{\mathcal E}
+\newcommand{\V}{\mathcal V}
+\newcommand{\av}[1]{\langle #1\rangle_n}
+\newcommand{\ac}[1]{\langle #1\rangle}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\abs}[1]{\lvert #1\rvert}
+\newcommand{\dd}{\delta}
+\newcommand{\bal}{\mathrm{bal}}
+\newcommand{\HH}{\mathcal H_n}
+\newcommand{\UU}{\mathscr U_n}
+\newcommand{\TV}{\operatorname{TV}}
+\newcommand{\ind}{\mathbf 1}
+\DeclareMathOperator{\diam}{diam}
+\DeclareMathOperator{\conv}{conv}
+\DeclareMathOperator{\capc}{cap}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\sinc}{sinc}
+\DeclareMathOperator{\arctanh}{artanh}
+\newcommand{\Rea}{\operatorname{Re}}
+\newcommand{\Ima}{\operatorname{Im}}
+\setlength{\emergencystretch}{2em}
+\allowdisplaybreaks[2]
+\raggedbottom
+\setlist[enumerate]{leftmargin=*,itemsep=3pt,topsep=4pt}
+\hypersetup{pdftitle={Eventual maximizers of the planar distance product},pdfauthor={Boyang Hu},pdfsubject={Revised manuscript with discrete propagation of finite-kernel signs and monotonicity}}
+\title[Eventual distance-product maximizers]{Eventual maximizers of the planar distance product}
+\author{Boyang Hu}
+\date{Revised September 22, 2026}
+\keywords{Fekete points, diameter constraint, logarithmic capacity, discrete Fourier analysis, diameter graphs}
+\newcommand{\FormalizationSource}{%
+The Lean formalisation is available at
+\href{https://github.com/Rogerhu12/Erdos1045}{\texttt{github.com/Rogerhu12/Erdos1045}}. The accompanying proof snapshot is \texttt{11dea5d09e39e784}, the SHA-256 prefix of \texttt{PROOF\_SHA256SUMS}; the full digest is recorded in \texttt{docs/SOURCE.md}.}
+\begin{document}
+\begin{abstract}
+We study the maximum product of squared pairwise distances among $n$ planar points of diameter at most two. We prove that, for all sufficiently large $n$, the maximizer is unique up to isometry and relabeling. In odd order it is the regular polygon. In even order its diameter graph is a cycle with three pendant edges, placed as evenly as possible, and the configuration is specified by a nonsingular algebraic stationary system. The argument also determines the normalized limits and proves eventual regularity under a perimeter constraint. Its main ingredients are global localization through logarithmic capacity and angular equilibrium, an exact normal--tangential quadratic form, and a finite sign model. A two-site improvement of the finite model is transferred to exactly feasible configurations with an error smaller than the discrete gain. A fixed Schur coordinate gives both this comparison and strict concavity, and a single rational energy inequality selects the algebraic branch.
+\end{abstract}
+\maketitle
+% BEGIN sections/01_introduction.tex
+\section{Introduction}\label{sec:intro}
+For a configuration $z=(z_0,\ldots,z_{n-1})$ of points in the plane, let
+\begin{equation}\label{eq:problem}
+ \Delta(z)=\prod_{0\le i<j<n}|z_i-z_j|^2,
+ \qquad M_n=\max_{\diam\{z_0,\ldots,z_{n-1}\}\le2}\Delta(z).
+\end{equation}
+We identify the plane with $\C$ and put $F(z)=\log\Delta(z)$. This problem goes back to Erd\H{o}s, Herzog and Piranian \cite[Problem~13, p.~143]{ehp} and Pommerenke \cite{pommerenke}. We use the normalization of \cite{cambie}; for $w_j=e^{2\pi ij/n}$, the Vandermonde identity gives $\Delta(w)=n^n$, hence $M_n\ge n^n$.
+
+Theorem~\ref{thm:main} proves \cite[Conjecture~4]{cambie} for all sufficiently large $n$, with uniqueness and balanced placement. Its odd-order part also gives the eventual form of the conjecture retained by Danzer and Pommerenke \cite[p.~102]{danzer-pommerenke}. In even order, displacements of opposite-pair centers determine the extremum.
+
+For even $n=2m$, define the balanced triple
+\begin{equation}\label{eq:balanced}
+ \mathbf r^{\bal}(n)=
+ \begin{cases}
+ (k,k,k),&n=6k,\\
+ (k,k+1,k),&n=6k+2,\\
+ (k+1,k,k+1),&n=6k+4.
+ \end{cases}
+\end{equation}
+
+\begin{theorem}\label{thm:main}
+Let $n_{\mathrm{reg}}=2^{100\,000\,000}$ and $n_{\mathrm{even}}=2^{10^{120}}$. For every odd $n\ge n_{\mathrm{reg}}$ and every even $n\ge n_{\mathrm{even}}$, the maximizer in \eqref{eq:problem} is unique up to Euclidean isometry and relabeling. If $n$ is odd, it is the regular polygon of diameter two, and
+\begin{equation}\label{eq:odd}
+ M_n=n^n\sec^{n(n-1)}\frac{\pi}{2n}.
+\end{equation}
+If $n$ is even, its complete diameter graph consists of a cycle $C_{n-3}$ and three pendant edges. The cycle arcs between their attachment vertices have lengths $2r_1-1$, $2r_2-1$, and $2r_3-1$, where $\mathbf r=\mathbf r^{\bal}(n)$. The maximizing configuration has a reflection symmetry and, when $6\mid n$, a rotation symmetry of order three.
+\end{theorem}
+
+We will also use a labeled description of the even graph. Extend a sign word on $\{0,\ldots,m-1\}$ by $\sigma_{j+m}=-\sigma_j$, and define
+\begin{equation}\label{eq:graph}
+ \begin{split}
+ E_\sigma={}&\{\{j,j+m\}:0\le j<m\}\\
+ &\cup\{\{j+1,j+m\}:0\le j<m,\ \sigma_j=1\}\\
+ &\cup\{\{j,j+m+1\}:0\le j<m,\ \sigma_j=-1\}.
+ \end{split}
+\end{equation}
+All vertex indices are taken modulo $n$. For a positive integer triple $\mathbf r=(r_1,r_2,r_3)$ with $r_1+r_2+r_3=m$, use the half-circle word $+^{r_1}-^{r_2}+^{r_3}$. The balanced word from \eqref{eq:balanced} is denoted by $\sigma^{\bal}$, and its graph by $E_n^{\bal}$. Thus the even graph in Theorem~\ref{thm:main} is $E_n^{\bal}$, up to relabeling.
+
+
+The even-order assertion determines a unique geometry, not merely a graph. Section~\ref{sec:algebraic} gives a finite algebraic prescription for this geometry. In particular, it provides a rational stationary system with $n+1$ real variables and a single rational energy inequality selecting its unique relevant solution. That solution is nonsingular and algebraic. If $z^{(n)}$ denotes the selected configuration, then
+\begin{equation}\label{eq:evenexact}
+ M_n=\prod_{i<j}|z_i^{(n)}-z_j^{(n)}|^2.
+\end{equation}
+This is an exact algebraic characterization; no elementary closed formula is asserted for even $n$.
+
+A perimeter problem plays an intermediate role. Let
+\begin{equation}\label{eq:perimeter-problem}
+ W_n=\max_{L(\conv\{z_0,\ldots,z_{n-1}\})\le2\pi}\Delta(z),
+\end{equation}
+where the perimeter of a segment means twice its length.
+
+\begin{theorem}\label{thm:perimeter}
+For every $n\ge n_{\mathrm{reg}}$, the unique maximizer in \eqref{eq:perimeter-problem}, up to Euclidean isometry and relabeling, is the regular polygon of perimeter $2\pi$. In particular,
+\begin{equation}\label{eq:perimeter-exact}
+ W_n=n^n\left(\frac{\pi}{n\sin(\pi/n)}\right)^{n(n-1)}.
+\end{equation}
+\end{theorem}
+
+The two parities have different normalized limits.
+\begin{corollary}\label{thm:limits}
+As $n\to\infty$ through even integers,
+\begin{equation}\label{eq:even-limit}
+ \frac{M_n}{n^n}\longrightarrow C_*
+ =\frac{3^{9/4}}8\exp\left(\frac{\pi^2-2\sqrt3\pi}{8}\right).
+\end{equation}
+Along odd integers, $M_n/n^n\to e^{\pi^2/8}$.
+\end{corollary}
+
+\paragraph{Earlier bounds and constructions.}
+Danzer and Pommerenke \cite[Satz~1 and the remark on pp.~101--103]{danzer-pommerenke} proved that the regular polygon is not optimal for any even $n\ge4$. Their Satz~2 also gives $M_n<n^n\exp(15n^{6/7})$ for all sufficiently large $n$. Their even-order constructions improve the normalized value by a term of order $1/n$; the conjectural upper bound $M_n/n^n<1+C/n$ proposed on p.~106 is not part of their theorem.
+
+Sothanaphan \cite[Proposition~1]{sothanaphan} obtained a fixed-factor asymptotic improvement uniformly over even orders, thereby disproving that conjectural upper bound. Cambie et al.\ \cite[Theorem~3]{cambie} subsequently proved
+\[
+ \liminf_{\substack{n\to\infty\\2\mid n}}\frac{M_n}{n^n}
+ \ge \exp\left(\frac7{24}\zeta(3)-\frac{\pi^4}{864}\right)
+ \approx1.26853.
+\]
+The constant $C_*$ in \eqref{eq:even-limit} was obtained by Cambie et al.\ \cite[Theorem~2]{cambie} from feasible configurations along $6\mid n$. Corollary~\ref{thm:limits} identifies it as the limit of the true maxima over all even orders.
+
+A computer-assisted proof and Lean implementation for the exact six-point value $M_6=64(2\sqrt3-2)^{18}$ are available in \cite{coleski-six}.
+
+\paragraph{Formalisation and scope.}
+Appendix~\ref{app:formalisation} records the formal conclusions and the differences in proof route. The quantitative Lean development supplies the sufficient thresholds
+\[
+ n_{\mathrm{reg}}=2^{100\,000\,000},\qquad
+ n_{\mathrm{even}}=2^{10^{120}}.
+\]
+For every $n\ge n_{\mathrm{reg}}$, the perimeter maximum is attained uniquely by the regular polygon, up to rigid motion and relabeling. At every odd such order, the exact diameter formula and the same uniqueness also hold; see Section~\ref{sec:perimeter}. For every even $n\ge n_{\mathrm{even}}$, the geometric and selected algebraic conclusions hold, and every maximizer has a unique strictly positive KKT multiplier family on its active constraints.
+
+\subsection{Outline of the argument}
+There are two passages from an approximate statement to an exact one. First, a global maximizer must enter a neighborhood in which the regular polygon's quadratic form controls the perimeter-normalized objective. Second, in even order, the discrete gap between two sign patterns must survive the nonlinear geometric correction. The first passage gives Theorem~\ref{thm:perimeter} and the odd case of Theorem~\ref{thm:main}; the second is needed only for the exact even configuration.
+
+To obtain the neighborhood, we first control the convex hull and then the positions of its vertices. Averaging circular measures of radius $1/n$ around the points converts $\Delta(z)\ge n^n$ into a lower bound for logarithmic capacity. A perimeter--capacity estimate makes the hull nearly circular. One-point extremality on the original hull then supplies the angular equilibrium equations. The sine product with zeros at the vertex angles is positive, up to sign, on every gap and satisfies a second-order equation there. An interval estimate gives the shortest-gap bound and, subsequently, near-equality of all gaps. This order of argument is important: the spacing estimate is a conclusion, not a hypothesis of the localization step.
+
+The quadratic calculation is expressed in normal and tangential edge increments. Closure determines only their first harmonics. The resulting form gives both strict perimeter stability and the optimal lift $c^0(q)$ of a normal field. For even $n$, a half-periodic center $C$ has the exact decomposition
+\[
+ C=c^0(q(C))+\Pi C,
+ \qquad P(C)=V_n(q(C))+P(\Pi C),
+\]
+where $V_n$ is positive semidefinite and $P$ is negative definite on the free center space. The same normal energy also gives a dual bound strong enough to control radial losses under the diameter constraint.
+
+The finite model is the maximum $B_n$ of $V_n$ on an antiperiodic box. A contracted linear lift realizes every point of the box by a feasible configuration, to error $O(n^{-2})$ in the logarithmic objective. Thus a geometric lower bound is available before the maximizing word is known. The adjacent crossing constraints give a supporting-strip inequality. Combined with the quadratic decomposition, it yields
+\[
+ F(z)-n\log n=B_n+O(n^{-2})
+\]
+and bounds the angular, radial, and free-center errors by $O(n^{-2})$. A nonnegative scalar gap is retained in this estimate. Its coordinatewise midpoint bound, together with the ambient equilibrium stresses, forces all matching distances and exactly one crossing at each site to be saturated. The resulting word has finite deficit at most $C_0/n^2$.
+
+The finite selection argument requires only a local improving move. Two supporting functions place the signs outside six short arcs. Inside a descending arc, translating the last misplaced positive interval one site to the left improves the finite value and changes only two signs. Once the arcs are monotone, a unit transfer between two unequal block lengths does the same. Therefore every nonbalanced near-maximizing word has a competitor differing at at most two independent sites and gaining at least $c/n^2$.
+
+It remains to transfer this move to geometry. For every word we construct exactly feasible configurations on the same convex parameter domain, using $v=\Pi C$ as the free center coordinate. All sites are coupled only through the two real components of the closure harmonic. At identical parameters, two near-maximizing words differing at boundedly many sites satisfy
+\[
+ F(\mathcal Z_\tau)-F(\mathcal Z_\sigma)
+ =V_n(A_n\tau)-V_n(A_n\sigma)+O(n^{-5/2}).
+\]
+The finite gain therefore contradicts geometric maximality unless the word is balanced. Strict concavity on the fixed-word parameter domain gives uniqueness. This use of a relative estimate is essential: an $O(n^{-2})$ error for each configuration separately would not decide a gap of the same order.
+
+Sections~\ref{sec:roundness} and \ref{sec:gaps} give localization; Sections~\ref{sec:normal} and \ref{sec:perimeter} establish the quadratic form and the perimeter theorem. The pressure and active-set arguments occupy Sections~\ref{sec:pressure} and \ref{sec:lens}. The finite improvement theorem and the common feasible coordinates are proved in Sections~\ref{sec:selection} and \ref{sec:fibers}. Section~\ref{sec:exact} concludes the geometric argument and evaluates the limits. Section~\ref{sec:algebraic} specifies the algebraic branch. Appendix~\ref{app:fixed-duals} proves the two numerical dual bounds by an analytic zero count and rational arithmetic.
+
+\subsection{Notation}
+Throughout,
+\[
+ N=n(n-1),\qquad a=\pi/n,\qquad w_j=e^{2\pi ij/n},\qquad
+ \mu_j=(2j+1)a,\qquad \ell_n=2n\sin a.
+\]
+Ordinary sums are unnormalized. We write
+\[
+ \av f=\frac1n\sum_jf_j,\qquad
+ \norm f_n^2=\av{|f|^2},\qquad
+ \norm f_{1,n}=\av{|f|},\qquad \dd f_j=f_{j+1}-f_j.
+\]
+For a general exponent $p$, $\norm f_{p,n}^p=\av{|f|^p}$. Vertex Fourier coefficients are $n^{-1}\sum_jf_j\overline{w_j}^{\,k}$. Edge Fourier coefficients use the midpoint grid $\mu_j$. For $n=2m$, a sequence is \emph{half-periodic} if $f_{j+m}=f_j$ and \emph{antiperiodic} if $f_{j+m}=-f_j$.
+
+The real quadratic forms used below are
+\begin{equation}\label{eq:quadratic-forms}
+ \A(u)=\sum_{i<j}\left|\frac{u_i-u_j}{w_i-w_j}\right|^2,
+ \quad P(u)=-\Re\sum_{i<j}\left(\frac{u_i-u_j}{w_i-w_j}\right)^2,
+ \quad \B(u)=\sum_j\left(\Im\frac{\dd u_j}{\dd w_j}\right)^2.
+\end{equation}
+For a real sequence $\theta$, put $\E(\theta)=\A(\theta)$. The real gradient of $F$ is represented by a complex vector:
+\[
+ \nabla_jF(z)=2\sum_{k\ne j}\frac{z_j-z_k}{|z_j-z_k|^2},
+ \qquad DF(z)[h]=\sum_j\Re\bigl(\overline{\nabla_jF(z)}h_j\bigr).
+\]
+A normalized perturbation satisfies $\sum_j u_j=\sum_j u_j\overline w_j=0$. Constants denoted by $C,c>0$ may change from line to line. Unless dependence is indicated, they are independent of $n$ and of the configurations in the stated domain. We use $\Lambda_n=1+\log n$ and $L_n=\lceil\log_2n\rceil$. All eventual statements are uniform in the sense justified in Section~\ref{sec:exact}.
+
+% END sections/01_introduction.tex
+
+% BEGIN sections/02_roundness.tex
+\section{The convex hull}\label{sec:roundness}
+We begin with a localization argument for the two optimization problems simultaneously. The product lower bound will control the hull; one-point extremality will be used in the next section to control the spacing of the points.
+
+The following perimeter--diameter inequality is due to Reinhardt \cite{reinhardt}. We include a proof in the normalization used here.
+\begin{lemma}[Reinhardt's perimeter--diameter inequality]\label{lem:diam-perim}
+A convex polygon with at most $n$ vertices and diameter at most two satisfies
+\begin{equation}\label{eq:diam-perim}
+ L(K)\le4n\sin\frac\pi{2n}\le2\pi.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Consider the difference body $K-K$. It lies in the disk of radius two and has at most $2n$ vertices. The Cauchy width formula gives $L(K-K)=2L(K)$. Extending its vertices radially to the circle gives a containing polygon. If it has $s$ vertices, concavity of sine bounds its perimeter by $4s\sin(\pi/s)$. The latter increases with $s$, giving \eqref{eq:diam-perim}. The segment convention gives the same inequality in the degenerate case.
+\end{proof}
+
+Fixing one point at the origin makes each feasible set compact. A regular polygon has positive product, so every maximizer consists of distinct points. Moving one point within the convex hull of the configuration cannot increase either constraint. Consequently each point maximizes its own distance product on this hull. The maximum-modulus principle places every point on the boundary. By Lemma~\ref{lem:diam-perim}, rescaling either kind of maximizer to perimeter $2\pi$ gives
+\begin{equation}\label{eq:common-input}
+ L(K)=2\pi,\qquad \Delta(Z)\ge n^n,\qquad
+ Z_i\in\operatorname*{arg\,max}_{z\in K}\prod_{j\ne i}|z-Z_j|^2,
+ \quad K=\conv\{Z_j\}.
+\end{equation}
+Only the perimeter and product conditions are needed in this section. For the diameter problem, Danzer and Pommerenke \cite[remark on pp.~101--102 and footnote~1]{danzer-pommerenke} already proved that every maximizing configuration has a connected diameter graph and that all its points are extreme points of its convex hull.
+
+\subsection{Circular regularization}
+We take logarithmic energy with the sign convention
+\[
+ I(\nu)=\iint\log|z-w|\,d\nu(z)d\nu(w),\qquad
+ \log\capc(E)=\sup_{\nu\in\mathcal P(E)}I(\nu).
+\]
+The leading coefficient of the normalized exterior conformal map of a smooth Jordan domain is its logarithmic capacity; see \cite[Theorem~3.5 and the discussion following (3.3)]{saff}. We also use monotonicity and homogeneity of capacity \cite[Section~1]{saff}. Saff's energy convention has the opposite sign.
+
+\begin{lemma}\label{lem:regularization}
+Let $\sigma_{z,t}$ be normalized arclength on the circle of radius $t>0$ centered at $z$. Set
+\[
+ \nu_t=\frac1n\sum_j\sigma_{Z_j,t},\qquad K_t=K+t\overline\D.
+\]
+Then
+\begin{equation}\label{eq:regularization}
+ I(\nu_t)\ge\frac{\log\Delta(Z)}{n^2}+\frac{\log t}{n}.
+\end{equation}
+In particular, $\Delta(Z)\ge n^n$ implies $\capc(K_{1/n})\ge1$.
+\end{lemma}
+\begin{proof}
+The circle-mean formula
+\[
+ \frac1{2\pi}\int_0^{2\pi}\log|a+te^{is}|\,ds
+ =\log\max\{|a|,t\}
+\]
+shows that each circle has self-energy $\log t$. For distinct centers its mutual energy satisfies
+\begin{align*}
+ I(\sigma_{Z_i,t},\sigma_{Z_j,t})
+ &=\frac1{2\pi}\int_0^{2\pi}\log\max\{t,|Z_i-Z_j-te^{is}|\}\,ds\\
+ &\ge\frac1{2\pi}\int_0^{2\pi}\log|Z_i-Z_j-te^{is}|\,ds
+ \ge\log|Z_i-Z_j|.
+\end{align*}
+Averaging over the centers proves \eqref{eq:regularization}. The calculation allows intersecting circles. At $t=1/n$, the lower bound $\log\Delta(Z)\ge n\log n$ exactly cancels the self-energy contribution. Hence $I(\nu_{1/n})\ge0$, and the support inclusion gives the capacity assertion.
+\end{proof}
+
+\subsection{Perimeter and capacity}
+For a convex body $E$ with nonempty interior, let $s_E$ denote its support function and put $R=L(E)/(2\pi)$. The following stability estimate converts the capacity bound into roundness. The square-root-of-the-derivative argument is closely related to the proof of Danzer and Pommerenke \cite[Lemma~1, pp.~107--108]{danzer-pommerenke}; we record a support-function version with an explicit constant.
+
+\begin{lemma}[Perimeter--capacity stability]\label{lem:length-capacity}
+If $c=\capc(E)$, then $c\le R$ and, for some $b\in\C$,
+\begin{equation}\label{eq:length-capacity}
+ \norm{s_E-s_{b+c\overline\D}}_\infty
+ \le\pi\sqrt{(R-c)(R+3c)}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Suppose first that $\partial E$ is analytic, and write its normalized exterior map as
+$\Psi(w)=cw+b+f(w)$, $f(\infty)=0$, and take the analytic square root
+$G=(\Psi'/c)^{1/2}$ with $G(\infty)=1$. The constant Laurent coefficient and the boundary-length formula give
+\[
+ \int_0^{2\pi}|G-1|^2=2\pi(R/c-1),\qquad
+ \int_0^{2\pi}|G+1|^2=2\pi(R/c+3).
+\]
+The first identity yields $c\le R$, and Cauchy--Schwarz gives
+\[
+ \int_0^{2\pi}|\Psi'(e^{it})-c|\,dt
+ \le2\pi\sqrt{(R-c)(R+3c)}.
+\]
+For a periodic curve of mean zero, the supremum norm is at most half the total variation. Indeed, the two paths between any pair of values together have that total variation, so their distance is at most half of it; averaging one endpoint gives the assertion. Apply this to $f(e^{it})$, then take the maximum of each real projection of $\Psi(e^{it})$. This proves \eqref{eq:length-capacity}.
+
+For a general convex body with nonempty interior, smooth the support function by the Poisson kernel and add a positive constant tending to zero. Explicitly, Poisson smoothing preserves the nonnegative measure $s_E+s_E''$; the added constant makes it strictly positive. The resulting analytic convex bodies converge in support norm and perimeter. After placing a fixed inner disk at the origin, uniform support convergence bounds them between homothetic copies $(1\pm\varepsilon)E$, so monotonicity and homogeneity of capacity give convergence of their capacities. The centers $b$ in the displayed bound are bounded. Passing to a subsequence proves the assertion for $E$.
+\end{proof}
+
+Danzer and Pommerenke \cite[Section~3, (3.7)--(3.8)]{danzer-pommerenke} already obtain $O(n^{-1/2})$ near-circularity of extremal convex hulls by a capacity argument; their subsequent upper bound uses Faber polynomials and Hadamard's inequality. Here circular regularization gives a quantitative estimate under only the stated perimeter and product assumptions.
+
+\begin{proposition}[Roundness without separation]\label{prop:roundness}
+If $L(K)=2\pi$ and $\Delta(Z)\ge n^n$, then, for sufficiently large $n$, a translation $b$ satisfies
+\begin{equation}\label{eq:annulus}
+ b+(1-\delta_n)\overline\D\subset K\subset b+(1+\delta_n)\overline\D,
+ \qquad \delta_n\le\frac{1+\pi\sqrt{4n+1}}n.
+\end{equation}
+The assumptions concern only the hull perimeter and the distance product.
+\end{proposition}
+\begin{proof}
+Apply Lemma~\ref{lem:length-capacity} directly to $E=K+n^{-1}\overline\D$. Its normalized perimeter is $R=1+1/n$, and Lemma~\ref{lem:regularization} gives $c\ge1$. Put $d=R-c\in[0,1/n]$. Since $s_E=s_K+1/n$, the support distance from $K$ to $b+\overline\D$ is at most
+\[
+ d+\pi\sqrt{d(4R-3d)}
+ \le\frac{1+\pi\sqrt{4n+1}}n.
+\]
+The last expression is the endpoint value of an increasing function on $[0,1/n]$. Support comparison gives \eqref{eq:annulus}; its inner disk also rules out degeneracy for large $n$.
+\end{proof}
+We now return to the original hull. Its one-point extremality, unlike the capacity estimate, has not been transferred to the outer parallel body.
+
+% END sections/02_roundness.tex
+
+% BEGIN sections/03_gaps.tex
+\section{Angular localization}\label{sec:gaps}
+The annulus in Proposition~\ref{prop:roundness} does not by itself control the vertex angles. We prove that equilibrium on a curve of small radial slope makes its extremal points nearly equiangular. The estimate starts with the minimum gap as an unknown.
+
+\subsection{The equation on an angular gap}
+Let
+\[
+ \phi_0<\phi_1<\cdots<\phi_{n-1}<\phi_0+2\pi,
+ \qquad \phi_{i+n}=\phi_i+2\pi,
+\]
+and define
+\begin{equation}\label{eq:circle-force}
+ f_i=\frac1n\sum_{j\ne i}\cot\frac{\phi_i-\phi_j}{2},\quad
+ \varepsilon=\norm{f}_\infty,\quad
+ H=\sum_{k=1}^{n-1}\frac1k,\quad
+ L_* =\frac n2\min_i(\phi_{i+1}-\phi_i).
+\end{equation}
+The minimum gap satisfies $0<L_*\le\pi$; its lower bound will follow from the equations below.
+
+\begin{lemma}[The gap equation]\label{lem:gap-equation}
+For $Y(t)=\prod_j\sin((t-\phi_j)/2)$,
+\begin{equation}\label{eq:sine-ode}
+ Y''(t)+\frac{n^2}{4}Y(t)
+ =\frac n2\left(\sum_j f_j\cot\frac{t-\phi_j}{2}\right)Y(t).
+\end{equation}
+On the $i$th gap, set $t=\phi_i+2x/n$ and $L_i=n(\phi_{i+1}-\phi_i)/2$. After multiplication by a constant sign, $v_i(x)=\pm Y(t)$ is positive for $0<x<L_i$ and satisfies
+\begin{equation}\label{eq:gap-eigenfunction}
+ -v_i''+V_i v_i=v_i,\qquad v_i(0)=v_i(L_i)=0,
+ \qquad V_i(x)=\frac2n\sum_j f_j\cot\frac{\phi_i+2x/n-\phi_j}{2}.
+\end{equation}
+All endpoint zeros are simple, and
+\begin{equation}\label{eq:gap-potential}
+ |V_i(x)|\le\frac{4\varepsilon H}{L_*}
+ +2\varepsilon\left(\frac1x+\frac1{L_i-x}\right).
+\end{equation}
+\end{lemma}
+\begin{proof}
+Put $c_j(t)=\cot((t-\phi_j)/2)$ and $c_{ij}=\cot((\phi_i-\phi_j)/2)$. The cotangent addition identity gives
+\[
+ c_i(t)c_j(t)=c_{ij}(c_i(t)-c_j(t))-1,
+ \qquad \frac{Y''}{Y}=-\frac n4+\frac12\sum_{i<j}c_i(t)c_j(t).
+\]
+Collect the terms multiplying each $c_i(t)$ to obtain \eqref{eq:sine-ode}. The change of variable on a gap gives \eqref{eq:gap-eigenfunction}.
+
+Use $|\cot(u/2)|\le2/u+2/(2\pi-u)$ for $0<u<2\pi$, and enumerate the nodes in both circular directions from the point under consideration. After the nearest endpoint, successive distances increase by at least $2L_*/n$. Summing these two harmonic bounds gives \eqref{eq:gap-potential}. This argument also applies when the gap under consideration is large.
+\end{proof}
+
+\subsection{An interval estimate}
+\begin{lemma}[Length of a positive-solution interval]\label{lem:interval}
+Suppose $v>0$ on $(0,L)$ has simple endpoint zeros and satisfies
+\[
+-v''+Vv=v,\qquad |V(x)|\le A_0+B_0\left(\frac1x+\frac1{L-x}\right),\qquad A_0,B_0\ge0.
+\]
+Suppose the equation holds classically in the interior and that integration by parts is valid at the simple endpoint zeros. Then
+\begin{equation}\label{eq:interval-sandwich}
+|L^2-\pi^2|\le A_0L^2+\pi^2B_0L.
+\end{equation}
+If $\kappa=A_0+\pi B_0<1$, then
+\begin{equation}\label{eq:interval-length}
+\left|\frac L\pi-1\right|\le\frac{\kappa}{2(1-\kappa)}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+For $u\in H^1_0(0,L)$, integrate the Cauchy--Schwarz bounds obtained from the two endpoints to get
+\begin{equation}\label{eq:endpoint-form}
+\int_0^L\left(\frac1x+\frac1{L-x}\right)u^2\,dx
+\le L\int_0^L|u'|^2\,dx.
+\end{equation}
+Indeed, the two terms are bounded by $\int_0^L(L-s)|u'(s)|^2ds$ and $\int_0^Ls|u'(s)|^2ds$.
+The ground-state identity for a test function vanishing linearly at the endpoints is
+\[
+\int_0^L\bigl(|u'|^2+(V-1)u^2\bigr)\,dx
+=\int_0^Lv^2\left|(u/v)'\right|^2dx\ge0.
+\]
+The boundary term vanishes because the zeros of $v$ are simple. Testing with $u(x)=\sin(\pi x/L)$ and using \eqref{eq:endpoint-form} yields
+\[
+1\le (1+B_0L)\frac{\pi^2}{L^2}+A_0.
+\]
+On the other hand, the equation tested against $v$ gives
+\[
+(1-B_0L)\int|v'|^2\le(1+A_0)\int v^2.
+\]
+When $B_0L<1$, Poincare's inequality implies
+$\pi^2\le(1+A_0)L^2+B_0\pi^2L$. When $B_0L\ge1$, the same conclusion is immediate. These two bounds are exactly \eqref{eq:interval-sandwich}.
+
+For \eqref{eq:interval-length}, put $x=L/\pi$ and $b=\pi B_0$. If $x\ge1$, then
+$x^2-1\le(A_0+b)x^2$, so
+\[
+x-1\le(1-\kappa)^{-1/2}-1
+=\frac{\kappa}{\sqrt{1-\kappa}(1+\sqrt{1-\kappa})}
+\le\frac{\kappa}{2(1-\kappa)}.
+\]
+If $x\le1$, then $1-x^2\le\kappa x$, hence $1-x\le\kappa/2$.
+\end{proof}
+
+Applying the lemma to \eqref{eq:gap-potential} gives all gap estimates at once:
+\begin{equation}\label{eq:all-gaps}
+ |L_i^2-\pi^2|\le\frac{4\varepsilon H}{L_*}L_i^2+2\pi^2\varepsilon L_i.
+\end{equation}
+In particular,
+\begin{equation}\label{eq:least-gap}
+ \pi^2\le L_*^2+(4H+2\pi^2)\varepsilon L_*.
+\end{equation}
+
+\subsection{Small-slope equilibrium}
+\begin{proposition}[Small-slope equilibrium]\label{prop:small-slope}
+Let $h$ be real, $2\pi$-periodic and Lipschitz, piecewise $C^1$ with one-sided derivatives at the nodes, and $\lVert h'\rVert_\infty\le\tau$. Suppose the nodes
+$Z_i=e^{h(\phi_i)+i\phi_i}$ are locally maximizing in each individual angular variable, with the others fixed. If
+\[
+u:=\tau(1+H)\le\frac1{100},
+\]
+then
+\begin{equation}\label{eq:small-slope}
+\lVert f\rVert_\infty\le\frac54\tau,\qquad
+\max_i\left|\frac{n(\phi_{i+1}-\phi_i)}{2\pi}-1\right|
+\le3\tau(1+H).
+\end{equation}
+No quantitative separation or convexity is assumed.
+\end{proposition}
+\begin{proof}
+Use the shortest representatives $x=\phi_i-\phi_j\in[-\pi,\pi]$, and put
+$y=h(\phi_i)-h(\phi_j)$ and $D=\cosh y-\cos x$. For a temporary radial logarithmic slope $s$ at the moving node,
+\begin{align*}
+\frac d{d\phi_i}\log|Z_i-Z_j|^2
+&=\cot(x/2)+s+R_s(x,y),\\
+R_s(x,y)&=\frac{s\sinh y}{D}
+-\frac{\sin x(\cosh y-1)}{(1-\cos x)D}.
+\end{align*}
+Here $|y|\le\tau|x|<1$ and $|s|\le\tau$. The inequalities
+$|\sinh y|\le2|y|$, $\cosh y-1\le y^2$, and
+$1-\cos x\ge2x^2/\pi^2$ give the single estimate
+\begin{equation}\label{eq:pairwise-defect}
+|R_s(x,y)|\le\left(\pi^2+\frac{\pi^4}{4}\right)\frac{\tau^2}{|x|}
+<\frac{35\tau^2}{|x|}.
+\end{equation}
+At a corner, the left and right derivatives of the full one-point objective have opposite weak signs. Their affine dependence on $s$ therefore supplies an intermediate slope $s_i\in[-\tau,\tau]$ at which the derivative is zero. At a smooth point use the actual slope. Counting circular distances yields
+$\sum_{j\ne i}|x_{ij}|^{-1}\le nH/L_*$, and hence
+\begin{equation}\label{eq:force-times-gap}
+\varepsilon L_*\le\tau L_*+35\tau^2H.
+\end{equation}
+The least gap has not yet been bounded below.
+
+Since $L_*\le\pi$ and $4H+2\pi^2\le12(1+H)$, equations \eqref{eq:least-gap} and \eqref{eq:force-times-gap} imply
+\[
+\frac{L_*^2}{\pi^2}\ge1-4u-47u^2>\frac14.
+\]
+Thus $L_*\ge\pi/2$, and returning to \eqref{eq:force-times-gap} gives
+\[
+\varepsilon\le\tau\left(1+\frac{70}{\pi}\tau H\right)\le\frac54\tau.
+\]
+For every gap, the parameter in Lemma~\ref{lem:interval} satisfies
+\[
+\kappa=\frac{4\varepsilon H}{L_*}+2\pi\varepsilon
+\le\left(\frac{8H}{\pi}+2\pi\right)\varepsilon
+\le\frac92(1+H)\varepsilon\le\frac{45}{8}u<\frac1{16}.
+\]
+The penultimate inequality follows from $H\ge1$, $8/\pi<9/2$ and $8/\pi+2\pi<9$. Therefore \eqref{eq:interval-length} gives
+\[
+\max_i\left|\frac{L_i}{\pi}-1\right|
+\le\frac8{15}\kappa\le3u.
+\]
+This proves both assertions.
+\end{proof}
+
+\begin{proposition}[Common edge localization]\label{prop:localization}
+Every sequence satisfying \eqref{eq:common-input}, with $n\to\infty$, admits a similarity normalization
+\begin{equation}\label{eq:localized}
+ Z_j=b+\beta(w_j+u_j),\qquad \beta\ne0,\qquad
+ \sum_j u_j=\sum_j u_j\overline w_j=0,
+\end{equation}
+such that
+\begin{equation}\label{eq:eta}
+ \eta_n:=\max_j\left|\frac{\dd u_j}{\dd w_j}\right|
+ =O\bigl(n^{-1/4}(1+\log n)\bigr)\longrightarrow0.
+\end{equation}
+\end{proposition}
+\begin{proof}
+Translate the center in \eqref{eq:annulus} to zero and write the convex boundary as $\gamma(\phi)=R(\phi)e^{i\phi}$, $h=\log R$. A supporting line with outward normal angle $\nu$ has distance at least $1-\delta_n$ from zero. Thus
+\[
+ \cos(\phi-\nu)\ge\frac{1-\delta_n}{1+\delta_n},\qquad
+ |h'(\phi)|=|\tan(\phi-\nu)|\le\frac{2\sqrt{\delta_n}}{1-\delta_n}
+ =O(n^{-1/4}).
+\]
+This also controls the one-sided slopes at vertices. One-point extremality applies along this boundary, so Proposition~\ref{prop:small-slope} gives a maximal normalized gap error $\rho_n=O(n^{-1/4}(1+\log n))$. Summation gives
+\[
+ \max_j|\phi_j-\phi_0-2\pi j/n|\le2\pi\rho_n.
+\]
+Almost everywhere, $\gamma'(\phi)=ie^{i\phi}+O(n^{-1/4})$. Integrating along adjacent arcs and using the chord midpoint phase therefore gives
+\[
+ \eta_n^0:=\max_j\left|
+ \frac{Z_{j+1}-Z_j}{e^{i\phi_0}(w_{j+1}-w_j)}-1\right|
+ =O(n^{-1/4}(1+\log n)).
+\]
+Set $b=n^{-1}\sum Z_j$ and $\beta=n^{-1}\sum Z_j\overline w_j$. The average edge ratio is $e^{-i\phi_0}\beta$, so $\beta\ne0$ eventually. The normalization \eqref{eq:localized} then has $\eta_n\le2\eta_n^0/(1-\eta_n^0)$.
+\end{proof}
+
+Thus every sequence of maximizers enters the edge neighborhood of the regular polygon. The next section computes the quadratic form in that neighborhood; its identities hold for all normalized perturbations.
+
+% END sections/03_gaps.tex
+
+% BEGIN sections/04_normal_form.tex
+\section{The edge quadratic form}\label{sec:normal}
+We compute the quadratic term of the distance product in edge coordinates. The normal component determines the favorable center displacement, while the free tangential component has a negative quadratic contribution. The calculation is exact and requires no smallness assumption.
+
+\subsection{Edge coordinates and closure}
+Suppose $\sum u_j=\sum u_j\overline w_j=0$. Write
+\begin{equation}\label{eq:edge-variables}
+ \zeta_j=\frac{\dd u_j}{\dd w_j},\qquad
+ q_j=-n\Im\zeta_j,\qquad p_j=n\Re\zeta_j.
+\end{equation}
+Then $p,q$ are real and have mean zero, and
+\begin{equation}\label{eq:edge-reconstruction}
+ \dd u_j=\frac{2\sin a}{n}e^{i\mu_j}(q_j+ip_j).
+\end{equation}
+Thus $q$ is the scaled normal edge increment and $p$ the scaled tangential increment. Edge Fourier coefficients are
+\[
+ \widehat f_\ell=\frac1n\sum_j f_j e^{-i\ell\mu_j}.
+\]
+Since $e^{in\mu_j}=-1$, a real edge field satisfies $\widehat f_{n-\ell}=-\overline{\widehat f_\ell}$. We use this midpoint convention throughout.
+
+Let $\mathsf P_1$ be the real first-harmonic projection and define
+\[
+ (\mathsf P_1q)_j=2\Re(\widehat q_1e^{i\mu_j}),\qquad
+ (\mathsf Jq)_j=2\Im(\widehat q_1e^{i\mu_j}).
+\]
+Closure of \eqref{eq:edge-reconstruction} is exactly
+\begin{equation}\label{eq:closure-harmonic}
+ \widehat p_1=-i\widehat q_1,
+ \qquad p=\mathsf Jq+p^\perp,
+ \qquad \av{p^\perp}=0,\quad \mathsf P_1p^\perp=0.
+\end{equation}
+Conversely, every real mean-zero $q$ and every real $p^\perp$ satisfying the last two conditions determine a closed increment sequence and, after fixing its mean, a unique normalized $u$. There are $n-1$ normal parameters and $n-3$ free tangential parameters. The first harmonic of $q$ remains free; it determines the tangential closing harmonic.
+
+\subsection{The exact normal form}
+Define a multiplier on all edge frequencies by
+\begin{equation}\label{eq:full-multiplier}
+ \Gamma_{\ell,n}=
+ \frac{(\ell-1)(n-\ell-1)}n
+ \frac{\sin^2a}{\sin((\ell-1)a)\sin((\ell+1)a)}
+ \quad(2\le\ell\le n-2),
+\end{equation}
+and put it equal to zero at $0,1,n-1$. Let $\widetilde T_n$ be the associated real self-adjoint operator, and set
+\[
+ \widetilde V_n(f)=\frac12\av{f\widetilde T_nf}
+ =\frac12\sum_{\ell=0}^{n-1}\Gamma_{\ell,n}|\widehat f_\ell|^2,
+ \qquad s_n=\frac{n-1}{n}.
+\]
+
+\begin{proposition}[Normal--tangential form]\label{prop:normal-form}
+For every $n\ge3$ and every normalized $u$,
+\begin{align}
+ P(u)&=\widetilde V_n(q)-\widetilde V_n(p^\perp),\label{eq:normal-P}\\
+ n\B(u)&=\norm{q}_n^2,\label{eq:normal-B}\\
+ D_2(u):=\frac{n-1}{2}\B(u)-P(u)
+ &=\frac12\av{q(s_nI-\widetilde T_n)q}
+   +\widetilde V_n(p^\perp).\label{eq:normal-D}
+\end{align}
+\end{proposition}
+\begin{proof}
+Extend $\widetilde T_n$ complex-linearly. We claim that
+\begin{equation}\label{eq:bilinear-edge}
+ P(u)=-\frac{n^2}{2}\Re\av{\zeta\widetilde T_n\zeta}.
+\end{equation}
+The average is bilinear. To verify the identity, expand $u_j=\sum_{k=2}^{n-1}b_kw_j^k$ and $s_k=\sin(ka)/\sin a$. Then
+\[
+ \zeta_j=\sum_{k=2}^{n-1}s_kb_ke^{i(k-1)\mu_j},\qquad
+ \av{\zeta\widetilde T_n\zeta}
+ =-\frac1n\sum_{k=3}^{n-1}(k-2)(n-k)b_kb_{n+2-k}.
+\]
+The surviving frequency sums equal $n$, and the midpoint grid contributes a minus sign. On the other hand, summation over the roots of unity gives
+\begin{align}
+ \A(u)&=\frac n2\sum_{k=2}^{n-1}k(n-k)|b_k|^2,\label{eq:A-spectrum}\\
+ P(u)&=\frac n2\Re\sum_{k=3}^{n-1}(k-2)(n-k)b_kb_{n+2-k}.\label{eq:P-spectrum}
+\end{align}
+To check the constants, set $D_k(x)=(x^k-1)/(x-1)$. Averaging over the initial vertex of each pair reduces the calculation to
+\[
+ \sum_{h=1}^{n-1}|D_k(w_h)|^2=k(n-k),\qquad
+ \sum_{h=1}^{n-1}D_k(w_h)D_l(w_h)=2n-kl=-(k-2)(n-k),
+\]
+where $k+l=n+2$ in the second identity. Its constant and degree-$n$ coefficients are both one. These prove \eqref{eq:bilinear-edge}; substituting $\zeta=(p-iq)/n$ and using $\widetilde T_n\mathsf Jq=0$ gives the normal form, including self-paired frequencies.
+\end{proof}
+
+The perimeter-normalized Hessian is therefore
+\[
+ \frac12\frac{d^2}{dt^2}\bigl(F(w+tu)-N\log\mathcal L(w+tu)\bigr)\Big|_{t=0}=-D_2(u),
+ \qquad \mathcal L(z)=\sum_j|\dd z_j|.
+\]
+Perimeter normalization penalizes the normal component, complementing the negative tangential part of $P$. Section~\ref{sec:perimeter} makes this quadratic comparison uniform in $n$.
+
+\subsection{Spectrum and energy comparison}
+The multiplier is a quotient of two cyclic operators. Define
+\[
+ (\mathsf Lf)_j=2f_j-f_{j+1}-f_{j-1},\qquad
+ (\mathsf Mf)_j=2\sum_{k\ne j}\frac{f_j-f_k}{|w_j-w_k|^2},
+ \qquad \lambda_1=4\sin^2a.
+\]
+Their Fourier eigenvalues are $4\sin^2(\ell a)$ and $\ell(n-\ell)$. On the orthogonal complement of constants and first harmonics,
+\begin{equation}\label{eq:operator-ratio}
+ \widetilde T_n=\frac{\lambda_1}{n}
+ \bigl(\mathsf M-(n-1)I\bigr)(\mathsf L-\lambda_1I)^{-1}.
+\end{equation}
+This uses $(\ell-1)(n-\ell-1)=\ell(n-\ell)-(n-1)$ and
+$\sin((\ell-1)a)\sin((\ell+1)a)=\sin^2(\ell a)-\sin^2a$.
+The first-harmonic modes have already been separated by \eqref{eq:closure-harmonic}, so the inverse in \eqref{eq:operator-ratio} is taken only on their orthogonal complement.
+
+\begin{lemma}[Spectral order]\label{lem:spectral-order}
+The multipliers decrease strictly for $2\le\ell\le n/2$, whenever this range contains more than one index. For all $n\ge3$,
+\begin{equation}\label{eq:spectral-gap}
+ 0\le\Gamma_{\ell,n}\le\frac{s_n}{3},
+ \qquad
+ \Gamma_{\ell,n}\le\frac{C}{\min(\ell,n-\ell)}
+\end{equation}
+on the nonzero frequencies.
+\end{lemma}
+\begin{proof}
+Put $x=\ell-1$, $y=n-\ell-1$, so $x+y=n-2$. Apart from a fixed factor, the multiplier is $xy/(\sin ax\sin ay)$. The function
+\[
+ H(x)=\log\frac{\sin(ax)}x,
+ \qquad H''(x)=\frac1{x^2}-\frac{a^2}{\sin^2(ax)}<0
+\]
+is strictly concave. Hence $H(x)+H(n-2-x)$ increases on its left half, proving the spectral order. The largest multiplier is
+\[
+ \Gamma_{2,n}=\frac{n-3}{n(3-4\sin^2a)}.
+\]
+Its bound by $s_n/3$ is equivalent to $(n-1)\sin^2(\pi/n)\le3/2$. For real $n\ge4$ the latter expression decreases: its logarithmic derivative times $n$ is $n/(n-1)-2a\cot a<0$, using $a\cot a\ge\pi/4$. Equality holds at $n=4$. At $n=3$ all weights vanish. The tail bound follows from $\sin a\le a$ and $\sin t\ge2\min(t,\pi-t)/\pi$.
+\end{proof}
+
+\begin{lemma}[Comparison with the physical energy]\label{lem:energy-comparison}
+Let
+\[
+ \A_1(u)=\chi_n\norm{\mathsf P_1q}_n^2,
+ \qquad \chi_n=\frac{n-2}{2n\cos^2a}\le1.
+\]
+Then
+\begin{equation}\label{eq:energy-comparison}
+ \A_1(u)+\widetilde V_n(q)+\widetilde V_n(p^\perp)
+ \le\A(u)
+ \le\A_1(u)+6\bigl(\widetilde V_n(q)+\widetilde V_n(p^\perp)\bigr).
+\end{equation}
+\end{lemma}
+\begin{proof}
+The $k=2$ vertex mode contributes exactly $\A_1$. For $3\le k\le n-1$, put
+\[
+ l=n+2-k,\qquad s_k=\frac{\sin(ka)}{\sin a},\qquad
+ A_k=\frac{k(n-k)}{s_k^2},\qquad R_k=\frac{(k-2)(n-k)}{s_ks_l}.
+\]
+Monotonicity of $\sin t/t$, first directly and then after reflection of the sine arguments, gives for $n\ge5$
+\begin{equation}\label{eq:one-ratio}
+ 1\le\frac{A_k}{R_k}
+ =\frac{k}{k-2}\frac{\sin((k-2)a)}{\sin(ka)}
+ \le\frac{k(n-k+2)}{(k-2)(n-k)}
+ =1+\frac{2n}{(k-2)(n-k)}\le6.
+\end{equation}
+The last step uses $(k-2)(n-k)\ge n-3$. At $n=4$ the only ratio is three; at $n=3$ there are no such modes. The companion Hermitian identity is
+\[
+ \widetilde V_n(q)+\widetilde V_n(p^\perp)
+ =\frac{n^2}{2}\av{\overline\zeta\widetilde T_n\zeta}.
+\]
+In the coefficients $\alpha_{k-1}=s_kb_k$, the weights of $\A-\A_1$ and of this last expression are respectively $nA_k/2$ and $nR_k/2$. Termwise comparison proves the result.
+\end{proof}
+
+\begin{corollary}[Lift, projection, and coercivity]\label{cor:schur}
+For prescribed mean-zero real $q$, the unique maximizer of $P$ over its normalized lifts has $p^\perp=0$. Denote it by $c^0(q)$; it is given by
+\begin{equation}\label{eq:schur-lift}
+ \frac{\dd c_j^0(q)}{\dd w_j}
+ =\frac2n\Im(\widehat q_1e^{i\mu_j})-\frac{i}{n}q_j.
+\end{equation}
+For $v=u-c^0(q(u))$, one has
+\begin{align}
+ q(v)&=0,&P(u)&=\widetilde V_n(q(u))+P(v),\label{eq:schur-orthogonal}\\
+ -P(v)&=\widetilde V_n(p^\perp),&
+ \A(v)&\le6\widetilde V_n(p^\perp)\le6\A(u),\label{eq:projection-bound}\\
+ \A(c^0(q))&\le\norm{q}_n^2,&
+ \sum_j|\dd c_j^0(q)|^2
+ &=\frac{4\sin^2a}{n}\bigl(\norm{q}_n^2+\norm{\mathsf P_1q}_n^2\bigr).
+ \label{eq:lift-bounds}
+\end{align}
+Moreover, for every $n\ge3$,
+\begin{equation}\label{eq:coercivity}
+ D_2(u)\ge\frac18\bigl(\A(u)+n\B(u)\bigr).
+\end{equation}
+\end{corollary}
+\begin{proof}
+For fixed $q$, the negative term in \eqref{eq:normal-P} is maximized exactly at $p^\perp=0$. Equation~\eqref{eq:closure-harmonic} then gives \eqref{eq:schur-lift}. Orthogonality and the projection estimate follow from \eqref{eq:normal-P} and \eqref{eq:energy-comparison}. Separating the first harmonic from the others gives $\A(c^0(q))\le\norm q_n^2$; the difference identity follows directly from \eqref{eq:edge-reconstruction} and the identities $|q+i\mathsf Jq|^2=q^2+(\mathsf Jq)^2$ and $\norm{\mathsf Jq}_n=\norm{\mathsf P_1q}_n$.
+
+For $n\ge4$, \eqref{eq:normal-D} and \eqref{eq:spectral-gap} give
+\[
+ D_2\ge\frac{s_n}{3}\norm q_n^2+\widetilde V_n(p^\perp),
+ \qquad \A(u)+n\B(u)\le2\norm q_n^2+6\widetilde V_n(p^\perp).
+\]
+Since $s_n\ge3/4$, \eqref{eq:coercivity} follows. When $n=3$, $p^\perp=0$ and $\widetilde V_n=0$; directly $D_2=(\A+n\B)/5$.
+\end{proof}
+
+\subsection{The even center model and its dual norm}
+For $n=2m$ and a mean-zero half-periodic center $c$, the edge variables $q,p,p^\perp$ are antiperiodic. Restricting $\widetilde T_n$ to that space leaves exactly the odd frequencies $3,5,\ldots,n-3$. We denote this restriction by $T_n$, its weights by $\gamma_{\ell,n}$, and its quadratic form by $V_n$. This restriction is the finite quadratic model used in the even-order problem.
+
+Define
+\begin{equation}\label{eq:pressure-dual-energy}
+ H_n(q)=\av{q(s_nI-T_n)q},\qquad
+ \mathfrak S_n=\sum_{\substack{3\le\ell\le n-3\\\ell\ \mathrm{odd}}}
+ \frac{\gamma_{\ell,n}^2}{s_n-\gamma_{\ell,n}}.
+\end{equation}
+Weighted Cauchy--Schwarz at each grid point yields
+\begin{equation}\label{eq:dual-pressure}
+ \norm{T_nq}_\infty^2\le\mathfrak S_n H_n(q),
+ \qquad \mathfrak S_n\longrightarrow2\log2-1.
+\end{equation}
+Indeed fixed odd frequencies have $\gamma_{\ell,n}\to1/(\ell+1)$, and the summands are bounded by $C/\min(\ell,n-\ell)^2$. Truncating the two ends of the frequency interval first, the limit is
+\[
+ 2\sum_{\substack{\ell\ge3\\\ell\ \mathrm{odd}}}\frac1{\ell(\ell+1)}=2\log2-1.
+\]
+The denominator in \eqref{eq:pressure-dual-energy} is positive by \eqref{eq:spectral-gap}. For a fixed evaluation point, the constant $\mathfrak S_n$ is attained on the ellipsoid $H_n(q)=1$ by Fourier coefficients proportional to $\gamma_{\ell,n}(s_n-\gamma_{\ell,n})^{-1}e^{-i\ell\mu_j}$.
+
+The first nonzero frequency in this model is the third. Half-periodicity allows only odd edge frequencies, and closure removes the first from the quadratic form. The spectral order favors the third harmonic; identifying the maximizing bounded field will also require the spatial properties of the kernel.
+
+\subsection{Norm estimates}\label{subsec:norms}
+We collect the estimates needed below. For a mean-zero sequence $u$, the root-of-unity spectrum and Parseval give
+\begin{align}
+ n^2\sum_j|\dd u_j|^2&\le C\A(u),&
+ \A(u)&\le Cn^3\sum_j|\dd u_j|^2,\label{eq:discrete-norms}\\
+ \norm u_\infty&\le\frac Cn\sqrt{\A(u)\log n}.\label{eq:sup-energy}
+\end{align}
+For mean-zero half-periodic $u$, $\A(u)\ge(n-2)\sum_j|u_j|^2$. The same spectrum, applied to the difference multiplier, implies
+\begin{equation}\label{eq:integration-parts}
+ \left|\sum_j f_j\dd\theta_j\right|
+ \le\frac C{n^2}\sqrt{\A(f)\E(\theta)}.
+\end{equation}
+Constant modes are irrelevant here. To see the multiplier comparison, use
+$\sin(\pi k/n)\le Ck(n-k)/n^2$ in the Parseval expression for the pairing.
+For antiperiodic $q$, the bound $\gamma_{\ell,n}\le C/\min(\ell,n-\ell)$ also gives
+\begin{equation}\label{eq:field-smoothing}
+ \norm{T_nq}_\infty\le C\norm q_n,
+ \qquad \A(T_nq)+\A(|T_nq|)\le Cn^2\norm q_n^2.
+\end{equation}
+The second assertion for $|T_nq|$ follows because taking absolute values cannot increase a difference energy. The estimates are uniform over all antiperiodic fields.
+
+For a mean-zero half-periodic center, define the real-linear projection
+\begin{equation}\label{eq:fixed-projection}
+ \Pi C=C-c^0(q(C)).
+\end{equation}
+Then $q(\Pi C)=0$, $\A(\Pi C)\le6\A(C)$, and the quadratic splitting in
+\eqref{eq:schur-orthogonal} is exact. We shall also use
+\begin{equation}\label{eq:additional-norms}
+ \norm u_n\le\frac Cn\sqrt{\A(u)},\qquad
+ \norm{c^0(q)}_\infty\le\frac Cn\norm q_n,\qquad
+ \norm{T_nq}_n\le C\norm q_{1,n},\qquad
+ \norm{\mathsf Jq}_{p,n}\le2\norm q_{p,n}.
+\end{equation}
+The first inequality follows from the least nonzero eigenvalue of the difference energy. For the second, integrate the lift increments along a period and apply Cauchy--Schwarz; subtracting the mean fixes the additive constant. For the third, every Fourier coefficient of $q$ is bounded by $\norm q_{1,n}$ and $\sum_\ell\gamma_{\ell,n}^2\le C$. The last inequality follows from the first-harmonic formula and H\"older's inequality, and holds also for $p=1,\infty$.
+
+Finally, splitting a product difference gives
+\begin{equation}\label{eq:product-energy}
+ \A(fh)\le2\norm f_\infty^2\A(h)+2\norm h_\infty^2\A(f).
+\end{equation}
+Constant modes may be removed before any application of a mean-zero norm bound. In particular, \eqref{eq:fixed-projection} will be used for centers after fixing their mean.
+
+% END sections/04_normal_form.tex
+
+% BEGIN sections/05_perimeter.tex
+\section{Perimeter stability}\label{sec:perimeter}
+Let $\mathcal L(z)=\sum_j|z_{j+1}-z_j|$ and set
+\[
+ J_n(z)=F(z)-N\log\mathcal L(z).
+\]
+On a convex boundary ordering, $\mathcal L(z)=L(\conv z)$; for a general local perturbation it remains the edge-length sum. The functional $J_n$ is invariant under similarities.
+
+\begin{lemma}[Uniform perimeter remainder]\label{lem:local-stability}
+For normalized $u$ with $\eta=\max_j|\dd u_j/\dd w_j|\le1/64$,
+\begin{equation}\label{eq:uniform-remainder}
+ |J_n(w+u)-J_n(w)+D_2(u)|\le4\eta\bigl(\A(u)+n\B(u)\bigr).
+\end{equation}
+Consequently,
+\begin{equation}\label{eq:local-stability}
+ J_n(w)-J_n(w+u)\ge\frac1{16}\bigl(\A(u)+n\B(u)\bigr),
+\end{equation}
+and equality requires $u=0$.
+\end{lemma}
+\begin{proof}
+Let $\rho_{ij}=(u_i-u_j)/(w_i-w_j)$ and $\rho_j=\dd u_j/\dd w_j$. A shortest edge chain gives $|\rho_{ij}|\le\pi\eta/2$. The root identity
+$\sum_{j\ne i}(w_i-w_j)^{-1}=(n-1)/(2w_i)$ and normalization make the two linear sums vanish. Thus
+\[
+ |F(w+u)-F(w)-P(u)|\le4\eta\A(u).
+\]
+For the perimeter use the exact identity
+\[
+ |1+\rho|-1-\Re\rho
+ =\frac{(\Im\rho)^2}{|1+\rho|+1+\Re\rho}.
+\]
+Its denominator lies in $[2-2\eta,2+2\eta]$. Average before taking logarithms; the averaged correction is at most $\eta^2/(2(1-\eta))$. Comparison with $\B(u)/(2n)$ gives the remaining error at most $4\eta n\B(u)$ in \eqref{eq:uniform-remainder}. Now use \eqref{eq:coercivity}. If $\A(u)=0$, the mean-zero normalization forces $u=0$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:perimeter} and the odd part of Theorem~\ref{thm:main}]
+A perimeter maximizer satisfies \eqref{eq:common-input}; by Proposition~\ref{prop:localization}, its normalized edge error tends to zero along every sequence with $n\to\infty$. If nonregular maximizers existed at arbitrarily large orders, such a sequence would eventually enter the fixed neighborhood in Lemma~\ref{lem:local-stability}. Its value of the similarity-invariant functional would be strictly smaller than that of a regular polygon, a contradiction. This proves \eqref{eq:perimeter-exact} and uniqueness.
+
+Scaling now gives, for all configurations of sufficiently large order,
+\[
+ \Delta(z)\le n^n\left(\frac{L(\conv z)}{2n\sin(\pi/n)}\right)^N.
+\]
+Lemma~\ref{lem:diam-perim} bounds this by $n^n\sec^N(\pi/(2n))$. If $n$ is odd, the regular polygon of circumradius $\sec(\pi/(2n))$ has diameter two and attains the bound. Equality must also hold in the perimeter problem, proving \eqref{eq:odd} and its uniqueness.
+\end{proof}
+
+\paragraph{Quantitative thresholds.}
+The quantitative global localization proved in the Lean development gives a similarity representation of every perimeter maximizer, with a boundary ordering and relative edge error $\eta<1/4000$, whenever $n\ge n_{\mathrm{reg}}$. This estimate uses the exterior-map/Faber route described in Appendix~\ref{app:formalisation}. Uniform local rigidity at this tolerance gives a strict loss in the similarity-invariant objective for any nonregular configuration, contradicting maximality. Hence every perimeter maximizer is regular. Evaluating its product yields \eqref{eq:perimeter-exact}; scaling and Lemma~\ref{lem:diam-perim} then give \eqref{eq:odd} and its equality case. This proves the displayed thresholds in Theorem~\ref{thm:perimeter} and the odd part of Theorem~\ref{thm:main}. The even-order threshold additionally uses the quantitative pressure, finite-comparison and algebraic-window estimates recorded in Appendix~\ref{app:formalisation}.
+
+\subsection{The even-order energy budget}
+For a diameter maximizer let
+\[
+ \mu_n=\log(M_n/n^n)\ge0,\qquad D_n=J_n(w)-J_n(z).
+\]
+The perimeter inequality gives the exact budget
+\begin{equation}\label{eq:perimeter-budget}
+ \mu_n+D_n=N\log\frac{L(\conv z)}{\ell_n}
+ \le N\log\sec\frac\pi{2n}\longrightarrow\frac{\pi^2}{8}.
+\end{equation}
+Together with localization and Lemma~\ref{lem:local-stability}, this gives
+\begin{equation}\label{eq:energy-budget}
+ \eta_n\to0,\qquad \A(u)+n\B(u)=O(1),
+ \qquad D_n=D_2(u)+o(1).
+\end{equation}
+The last equality is the same remainder estimate \eqref{eq:uniform-remainder}, now on a bounded energy budget.
+
+Let $n=2m$ and $e_j=(u_j+u_{j+m})/2$. The quadratic form $D_2$ splits orthogonally between the two antipodal parities, and both parts are nonnegative. Thus for $q^e=q(e)$,
+\begin{equation}\label{eq:initial-dual-budget}
+ H_n(q^e)\le2D_2(e)\le2D_2(u)\le\frac{\pi^2}{4}+o(1).
+\end{equation}
+Once the small change from $q^e$ to the physical, de-rotated center variable is accounted for in the next section, \eqref{eq:dual-pressure} therefore implies
+\begin{equation}\label{eq:pressure-gap-limit}
+ \limsup_{\substack{n\to\infty\\2\mid n}}
+ \frac{\norm{T_nq}_\infty}{\pi}
+ \le\frac12\sqrt{2\log2-1}<\frac12.
+\end{equation}
+This strict dual bound will absorb the possible gain from unsaturated matching radii. It has been obtained before the finite model is maximized.
+
+% END sections/05_perimeter.tex
+
+% BEGIN sections/06_pressure.tex
+\section{The finite box and the pressure estimate}\label{sec:pressure}
+From now on, unless stated otherwise, $n=2m$. Define
+\begin{equation}\label{eq:finite-box}
+ \mathcal Q_n=\{q\in\R^n:q_{j+m}=-q_j,\ |q_j|\le A_n\},
+ \qquad A_n=n\tan\frac a2,\qquad B_n=\max_{q\in\mathcal Q_n}V_n(q).
+\end{equation}
+The operator $T_n$ was defined in Section~\ref{sec:normal}. We will first compare its unknown box maximum with the geometric value and then control the error variables of a true maximizer.
+
+\subsection{A feasible comparison for every box point}
+\begin{proposition}[Box comparison]\label{prop:box-lift}
+Put $R_0=2(1-\cos a)$ and $\lambda_n=(1+R_0^2/2)^{-1/2}$. The explicit continuous map
+\[
+ \widetilde{\mathcal S}_n(q)=\lambda_n(w+c^0(q))
+\]
+satisfies, uniformly on $\mathcal Q_n$ for sufficiently large even $n$,
+\begin{equation}\label{eq:box-lift}
+ \diam\widetilde{\mathcal S}_n(q)\le2,\qquad
+ F(\widetilde{\mathcal S}_n(q))-n\log n=V_n(q)+O(n^{-2}).
+\end{equation}
+\end{proposition}
+\begin{proof}
+Writing $q=A_ns$, formula \eqref{eq:schur-lift} gives
+\[
+ e^{-i\mu_j}\dd c_j^0=R_0s_j+ib_j^0,\qquad
+ |b_j^0|\le\sqrt2R_0,\qquad |\dd c_j^0|\le\sqrt3R_0.
+\]
+Here $2|\widehat q_1|^2\le\norm q_n^2\le A_n^2$. Before contraction, matching lengths are two, and both adjacent crossing squared lengths are at most
+\[
+ (2\cos a+R_0|s_j|)^2+(b_j^0)^2\le4+2R_0^2.
+\]
+For another offset $m\pm k$, $2\le k\le m-1$, the length is at most $2\cos(ka)+\sqrt3kR_0$. Convexity of $1-\cos x$ on $[0,\pi/2]$ gives
+\[
+ 2(1-\cos(ka))\ge k(1-\cos2a)=kR_0(1+\cos a)>\sqrt3kR_0
+\]
+for even $n\ge6$. The stated contraction therefore makes every pair feasible.
+
+For $\rho_{ij}=(c_i^0-c_j^0)/(w_i-w_j)$, the maximal modulus is $O(n^{-1})$ and $\sum|\rho_{ij}|^2=O(1)$. Antipodal pairing cancels odd powers, as in the related expansion of \cite[Section~4.2]{sothanaphan}, and gives
+\begin{equation}\label{eq:antipodal-log}
+ F(w+c^0)-n\log n=\sum_{i<j}\log|1-\rho_{ij}^2|
+ =P(c^0)+O(n^{-2})=V_n(q)+O(n^{-2}).
+\end{equation}
+Finally $N\log\lambda_n=O(n^{-2})$.
+\end{proof}
+In particular,
+\begin{equation}\label{eq:box-lower}
+ \mu_n:=\log(M_n/n^n)\ge B_n-Cn^{-2}.
+\end{equation}
+The contraction need not preserve the matching lengths. At this stage only feasibility and the logarithmic value estimate are needed.
+
+\subsection{Physical coordinates}
+Let $z$ be a diameter maximizer. Choose translation and rotation so that $z=\beta(w+u)$, $\beta>0$, and the two Fourier normalizations hold. The antipodal average gives
+\[
+ 2\beta=\frac1n\sum_j(z_j-z_{j+m})\overline w_j,
+\]
+so $\beta\le1$. Equations \eqref{eq:energy-budget} and $F(z)-n\log n=N\log\beta+P(u)+o(1)\ge0$ imply $\beta=1-O(n^{-2})$.
+Define
+\begin{equation}\label{eq:physical-decomposition}
+ \begin{split}
+ e_j&=(u_j+u_{j+m})/2,\qquad o_j=(u_j-u_{j+m})/2,\\
+ C_j&=(z_j+z_{j+m})/2=\beta e_j,\\
+ d_j&=(z_j-z_{j+m})/2=\beta(w_j+o_j)=r_jw_je^{i\theta_j},\\
+ b_j&=1-r_j\ge0,\qquad c_j=e^{-i\theta_j}C_j,\qquad
+ z_j=e^{i\theta_j}\bigl((1-b_j)w_j+c_j\bigr).
+ \end{split}
+\end{equation}
+Here $b,c,\theta$ are half-periodic. Rotate to make $\av\theta=0$, and translate to make $\av c=0$; the latter equation has coefficient $\av{e^{-i\theta}}\to1$. Put
+\begin{equation}\label{eq:pressure-variables}
+ \tau=n\sum_jb_j,\qquad q=q(c),\qquad
+ c=c^0(q)+v,\qquad \mathscr D=\A(v),\qquad g=T_nq.
+\end{equation}
+The nonnegative quantities $b_j$ measure the matching deficits; their vanishing will be proved in Section~\ref{sec:lens}.
+
+In this section and the next, $q=q(c)$ and $v=\Pi c$ denote the pressure field and residual. They are distinct from $q(C)$ and $\Pi C$ in the fixed physical frame. In particular, the pressure field is not assumed to lie in $\mathcal Q_n$.
+
+The initial estimates are
+\begin{align}
+ \tau+\A(c)+\E(\theta)+\norm q_n^2&=O(1),\label{eq:initial-pressure}\\
+ \norm c_\infty+\norm\theta_\infty&=O(\sqrt{\log n}/n),
+ \qquad n(\norm{\dd c}_\infty+\norm{\dd\theta}_\infty+\norm{\dd b}_\infty)=o(1).
+ \label{eq:initial-pointwise}
+\end{align}
+Indeed, $\av{|d|^2}=\beta^2(1+\av{|o|^2})\ge\beta^2$ gives $\tau\le n^2(1-\beta^2)=O(1)$. From $\theta_j=\arg(1+o_j/w_j)$ and the energy product estimate, $\E(\theta)\le C\A(o)+Cn\sum|o_j|^2=O(1)$. Similarly $\A(c)\le C\A(C)+C\norm C_\infty^2\E(\theta)$. For the radial difference use
+\[
+ r_{j+1}-r_j=
+ \frac{\Re((d_{j+1}-d_j)\overline{d_{j+1}+d_j})}{r_{j+1}+r_j};
+\]
+the root-of-unity leading term has zero real part. This cancellation gives the radial-difference estimate in \eqref{eq:initial-pointwise}.
+
+Let $q^e=q(e)$. Expanding $\dd(e^{-i\theta}\beta e)$ using \eqref{eq:sup-energy} and \eqref{eq:discrete-norms} yields
+\begin{equation}\label{eq:deangle-error}
+ \norm{q-q^e}_n=O\left(\sqrt{\frac{\log n}{n}}\right)=o(1).
+\end{equation}
+Thus \eqref{eq:initial-dual-budget} and \eqref{eq:dual-pressure} apply to the actual field and give, eventually,
+\begin{equation}\label{eq:pressure-gap}
+ \norm g_\infty\le\frac\pi2,
+ \qquad \A(g)+\A(|g|)\le Cn^2.
+\end{equation}
+
+\subsection{A supporting strip for the crossing constraints}
+Set $\eta_j=\dd\theta_j$, $h_j=\eta_j/2$, $\beta_j=\mu_j+(\theta_j+\theta_{j+1})/2$, and
+\[
+ D_j=d_j+d_{j+1},\qquad B_j=C_{j+1}-C_j,\qquad
+ t_j=\Im\bigl(e^{-i\mu_j}(c_j+c_{j+1})\bigr).
+\]
+Their rotated normal components are
+\begin{equation}\label{eq:rotating-crossing}
+ x_j=(2-b_j-b_{j+1})\cos(a+h_j),\qquad
+ R_j=\frac{2\sin a}{n}\cos h_j\,q_j-\sin h_j\,t_j.
+\end{equation}
+Taking real parts in $|D_j\pm B_j|\le2$ gives the exact strip
+\begin{equation}\label{eq:strip}
+ |R_j|\le2-x_j.
+\end{equation}
+Test the strip against $g_j$, divide by $\cos h_j>0$, and average. This gives the exact inequality
+\begin{align}\label{eq:strip-signed}
+ \av{qg}-A_n\av{|g|}
+ &\le\sum_j|g_j|\tan h_j+\frac1{\sin a}\sum_j|g_j|(\sec h_j-1)\notag\\
+ &\quad+\frac1{2\sin a}\sum_j(b_j+b_{j+1})(\cos a-\sin a\tan h_j)|g_j|
+ +\frac1{2\sin a}\sum_jg_jt_j\tan h_j.
+\end{align}
+In particular, the initial estimates give
+\begin{equation}\label{eq:signed-pressure}
+ \av{qg}-A_n\av{|g|}
+ \le\left(\frac{\norm g_\infty}{\pi}+o(1)\right)\tau
+ +\frac12\sum_j|g_j|\eta_j
+ +\frac1{4\sin a}\sum_jg_jt_j\eta_j+\frac Cn\E(\theta).
+\end{equation}
+Indeed $\sum\eta_j^2\le C\E(\theta)/n^2$, the radial coefficient is $\cot a/n=1/\pi+O(n^{-2})$, and the remainders of $\tan h$ and $\sec h$ have the stated bounds. Every error in this constraint estimate is charged to the radial or angular variables.
+
+\subsection{The fourth-order terms}
+Write
+\[
+ Q_n(c)=\sum_{i<j}\left|\frac{c_i-c_j}{w_i-w_j}\right|^4,\qquad
+ \mathcal R(c)=Q_n(c)+\norm c_\infty^2\A(c).
+\]
+\begin{lemma}\label{lem:quartic}
+Under \eqref{eq:initial-pressure}--\eqref{eq:initial-pointwise} and the adjacent crossing constraints,
+\begin{equation}\label{eq:quartic}
+ \mathcal R(c)\le Cn^{-2}+C\tau/\sqrt n+\varepsilon_n\mathscr D,
+ \qquad\varepsilon_n\longrightarrow0.
+\end{equation}
+\end{lemma}
+\begin{proof}
+The lift identity and Cauchy--Schwarz, followed by \eqref{eq:sup-energy} for $v$, give
+\[
+ \norm{c^0(q)}_\infty\le C/n,\qquad
+ \norm c_\infty\le Cn^{-1}(1+\sqrt{\mathscr D\log n}),\qquad
+ \norm\eta_\infty\le C\sqrt{\E(\theta)}/n.
+\]
+Put $M=\norm q_\infty$ and $E=\E(\theta)$. Dividing \eqref{eq:strip} by $(2\sin a/n)\cos h_j$ gives
+\[
+ |q_j|\le C[1+n^2(b_j+b_{j+1})+n|\eta_j|+n^2\eta_j^2+n^2|t_j\eta_j|].
+\]
+Consequently $M\le C(1+n\tau+\sqrt{\mathscr D E\log n})$, while $M\le\sqrt n\norm q_n\le C\sqrt n$. Multiply the first inequality by $M$ and apply Young's inequality to its constant and square-root terms. The second bound then gives
+\[
+ M^2\le C+Cn^{3/2}\tau+C\mathscr D E\log n.
+\]
+The maximal chord quotient of $c^0(q)$ is at most $C(M+1)/n$ and $\A(c^0)=O(1)$, so
+\[
+ Q_n(c^0)\le Cn^{-2}+C\tau/\sqrt n+C\mathscr D\log n/n^2.
+\]
+The maximal chord quotient of $c$ is $o(1)$ and that of $c^0$ is $O(n^{-1/2})$. Hence $Q_n(v)\le o(1)\mathscr D$. Use $Q_n(c)\le8Q_n(c^0)+8Q_n(v)$ and
+$\norm c_\infty^2\A(c)\le Cn^{-2}+C\mathscr D\log n/n^2$ to conclude.
+\end{proof}
+The use of the crossing constraints in this lemma is essential. Its error terms are chosen to be absorbed by the negative radial and transverse terms of the objective.
+
+\subsection{The logarithmic objective}
+\begin{lemma}[The objective estimate]\label{lem:objective-pressure}
+For feasible configurations satisfying \eqref{eq:initial-pressure}--\eqref{eq:initial-pointwise}, there is a fixed $c_1>0$ such that
+\begin{equation}\label{eq:objective-pressure}
+ F(z)-n\log n\le V_n(q)-c_1\mathscr D-c_1\E(\theta)-(1-o(1))\tau+Cn^{-2}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+We first set the matching radii equal to one for the purpose of comparing objective values. Put $d_j^0=w_je^{i\theta_j}$, keep $C=e^{i\theta}c$, and write
+\[
+ \rho_{ij}=\frac{c_i-c_j}{w_i-w_j},\qquad
+ r_{ij}=\frac{C_i-C_j}{d_i^0-d_j^0},\qquad
+ H_{ij}=\frac{e^{i\theta_i}-e^{i\theta_j}}{d_i^0-d_j^0}.
+\]
+The exact identity
+\begin{equation}\label{eq:deformed-ratio}
+ r_{ij}-\rho_{ij}=(c_i-w_i\rho_{ij})H_{ij}
+\end{equation}
+and the preliminary edge bounds give $\sum|H_{ij}|^2\le C\E(\theta)$ and $\max|H_{ij}|=o(1)$. For $k=r-\rho$, Cauchy--Schwarz gives
+\[
+ \sum|\rho k|\le C\sqrt{\mathcal R(c)\E(\theta)},\qquad
+ \sum|k|^2+\sum|k|^4=o(1)\E(\theta).
+\]
+Antipodal pairing and expansion therefore imply
+\[
+ F(d^0+C)-F(d^0)=\sum_{i<j}\log|1-r_{ij}^2|
+ \le P(c)+C\sqrt{\mathcal R(c)\E(\theta)}+C\mathcal R(c)+o(1)\E(\theta).
+\]
+Along $w_je^{is\theta_j}$, the circular logarithmic product has first derivative zero at $s=0$ and second derivative $-2(1+o(1))\E(\theta)$. Thus $F(d^0)\le n\log n-(1-o(1))\E(\theta)$. Since $P(c)\le V_n(q)-\mathscr D/6$, Young's inequality gives
+\[
+ F(d^0+C)-n\log n\le V_n(q)-\mathscr D/6-\E(\theta)/2+C\mathcal R(c).
+\]
+To restore the actual radii, consider $y=e^{i\theta}((1-sb)w+c)$, $0\le s\le1$. Feasibility along this path is not needed, since we use it only to compare $F$. Its relative chord error $\epsilon$ is $o(1)$ and $\A(y-w)=O(1)$, including $\A(bw)\le Cn^2(\sum b_j)^2$. Uniformly in $j$, H\"older's inequality gives
+\begin{align*}
+ |\nabla_jF(y)-(n-1)w_j|
+ &\le C\sum_{k\ne j}\frac{|\rho_{jk}(y-w)|}{|w_j-w_k|}\\
+ &\le C\epsilon^{1/2}\left(\sum_{k\ne j}|\rho_{jk}(y-w)|^2\right)^{1/4}
+ \left(\sum_{k\ne j}|w_j-w_k|^{-4/3}\right)^{3/4}=o(n).
+\end{align*}
+Integration in $s$ subtracts $(1-o(1))\tau$. Substituting \eqref{eq:quartic}; its $C\tau/\sqrt n$ and $\varepsilon_n\mathscr D$ terms are absorbed, proving \eqref{eq:objective-pressure}.
+\end{proof}
+
+\subsection{The scalar gap and pressure closure}
+For any real antiperiodic $q$, define
+\begin{equation}\label{eq:scalar-gap}
+ \mathscr G_n(q)=B_n+V_n(q)-A_n\av{|T_nq|}.
+\end{equation}
+For $f=A_n\sgn(T_nq)$, with antipodal choices at zeros, positivity of $V_n$ gives the exact identity
+\begin{equation}\label{eq:gap-splitting}
+ \mathscr G_n(q)=B_n-V_n(f)+V_n(q-f)\ge0.
+\end{equation}
+In particular, with the physical field $g=T_nq$, the support formula is
+\begin{equation}\label{eq:box-support}
+ V_n(q)=B_n-\mathscr G_n(q)+\av{qg}-A_n\av{|g|}.
+\end{equation}
+We keep the gap term in \eqref{eq:box-support}; its pointwise consequences will determine the active set. By \eqref{eq:integration-parts} and \eqref{eq:pressure-gap}, the first angular sum in \eqref{eq:signed-pressure} is at most $C\sqrt{\E(\theta)}/n$. The difference-product estimate gives
+\begin{equation}\label{eq:product-pressure}
+ \A(t)\le C\A(c),\qquad
+ \A(gt)\le C\bigl(\A(c)+n^2\norm c_\infty^2\bigr)\le C(1+\mathscr D\log n).
+\end{equation}
+The other angular term is therefore at most
+$C\sqrt{\E(\theta)}/n+C\sqrt{\log n}\sqrt{\mathscr D\E(\theta)}/n$.
+Combining the objective and the strip estimates with \eqref{eq:box-support}, Young's inequality absorbs these terms, while $\norm g_\infty/\pi\le1/2$ absorbs the radial gain. We obtain
+\begin{equation}\label{eq:pressure-final-upper}
+ F(z)-n\log n\le B_n-\mathscr G_n(q)-c_2(\tau+\mathscr D+\E(\theta))+Cn^{-2}.
+\end{equation}
+
+\begin{proposition}[Pressure estimate]\label{prop:pressure}
+Every even-order global maximizer satisfies, eventually,
+\begin{equation}\label{eq:pressure-conclusion}
+ |\mu_n-B_n|\le Cn^{-2},\qquad
+ \mathscr G_n(q)+\tau+\mathscr D+\E(\theta)\le Cn^{-2}.
+\end{equation}
+Moreover,
+\begin{equation}\label{eq:pressure-pointwise}
+ \norm c_\infty+\norm C_\infty\le C/n,\quad b_j\le Cn^{-3},\quad
+ \norm{\dd\theta}_\infty+\norm{\dd C}_\infty\le Cn^{-2},\quad
+ |q_j|\le A_n+C/n.
+\end{equation}
+\end{proposition}
+\begin{proof}
+Compare \eqref{eq:pressure-final-upper} with \eqref{eq:box-lower}. Then \eqref{eq:sup-energy} gives $\norm v_\infty\le C\sqrt{\log n}/n^2$, hence $c=O(n^{-1})$. Nonnegativity of $b$ gives $b_j\le Cn^{-3}$, and \eqref{eq:discrete-norms} gives $|\eta_j|\le Cn^{-2}$. Returning to the unweighted strip yields
+\[
+ |q_j|\le A_n+C\{n^2(b_j+b_{j+1})+n|\eta_j|+n^2\eta_j^2+n^{-2}\}\le A_n+C/n.
+\]
+The lift formula and the difference bound for $v$ control $\dd c$, and de-rotation controls $\dd C$.
+\end{proof}
+
+\subsection{Exclusion of distant diameters}
+The unweighted constraint estimate and \eqref{eq:pressure-pointwise} give
+\[
+ |\Re(e^{-i\beta_j}\dd C_j)|\le\frac{\pi^2}{n^2}+Cn^{-3}.
+\]
+Rotate $k$ consecutive increments into the mean direction of $d_j,d_{j+k}$. Their normal contribution is at most $\pi^2k/n^2$, and the phase error is $Ck^2/n^3$. The semidiameters have moduli $1+O(n^{-3})$, at most one, and angular difference $2ka+O(k/n^2)$. Hence
+\begin{equation}\label{eq:nonlocal-bound}
+ |d_j+d_{j+k}\pm(C_{j+k}-C_j)|^2
+ \le4-4\sin^2(ka)+\frac{4\pi^2k}{n^2}+\frac{Ck^2}{n^3}.
+\end{equation}
+At $k=2$ the deficit is $8\pi^2/n^2+O(n^{-3})$. For $k\ge3$, use $\sin(\pi k/n)\ge2k/n$ and $16k^2-4\pi^2k\ge(16-4\pi^2/3)k^2>0$. Thus
+\begin{equation}\label{eq:nonlocal-margin}
+ 4-|z_j-z_{j+m\pm k}|^2\ge c\frac{k(k-1)}{n^2}>0
+ \qquad(2\le k\le m-1).
+\end{equation}
+Only matching pairs and adjacent crossings can therefore be diameters. The next section determines which of these constraints are active.
+
+% END sections/06_pressure.tex
+
+% BEGIN sections/07_active_constraints.tex
+\section{The active diameter constraints}\label{sec:lens}
+After the pressure estimate, translate the physical centers to mean zero while retaining $\av\theta=0$. The additional translation is $O(\sqrt{\log n}/n^3)$ and does not change the estimates. In particular,
+\begin{equation}\label{eq:lens-pointwise}
+ \norm\theta_\infty\le C\sqrt{\log n}/n^2,\qquad
+ \max_{i\ne j}\left|\frac{z_i-z_j}{w_i-w_j}-1\right|\le C/n.
+\end{equation}
+We first turn the scalar gap into a pointwise margin and then use the equilibrium stresses to determine the active set. A dot denotes the real Euclidean product on $\C$.
+
+\subsection{A pointwise consequence of the scalar gap}
+\begin{lemma}[Midpoint bound]\label{lem:midpoint}
+Let $K_{0,n}=\frac12\sum_p\gamma_{p,n}$, and let $e_i^{\mathrm{ap}}$ equal one at $i$, minus one at $i+m$, and zero elsewhere. For every antiperiodic $q$ and every independent site $i$,
+\begin{equation}\label{eq:midpoint-margin}
+ |(T_nq)_i|\ge\frac{2A_nK_{0,n}}n-\frac{n\mathscr G_n(q)}{2A_n},
+ \qquad K_{0,n}=\tfrac12\log n+O(1).
+\end{equation}
+\end{lemma}
+\begin{proof}
+Write $g=T_nq$ and choose an antiperiodic sign word $\epsilon$ with $\epsilon_jg_j=|g_j|$, including a choice at every zero. Put $f=A_n\epsilon$ and $f^0=f-A_n\epsilon_i e_i^{\mathrm{ap}}$. Both $f^0\pm A_ne^{\mathrm{ap}}_i$ belong to the box, and $V_n(e^{\mathrm{ap}}_i)=4K_{0,n}/n^2$. Hence
+\[
+ B_n\ge V_n(f^0)+A_n^2V_n(e^{\mathrm{ap}}_i),\qquad
+ \mathscr G_n(q)\ge V_n(q-f^0)+\frac{4A_n^2K_{0,n}}{n^2}-\frac{2A_n}{n}|g_i|.
+\]
+Discard the first term. For the trace, the explicit multiplier gives $\gamma_{p,n}=(p+1)^{-1}+O(n^{-1})$ uniformly on odd $3\le p\le n/2$. Pair $p$ with $n-p$ and sum the odd harmonic series.
+\end{proof}
+In particular, (\ref{eq:pressure-conclusion}) implies
+\begin{equation}\label{eq:potential-margin}
+ \min_i|g_i|\ge\frac{(\pi/2)\log n-C}{n}.
+\end{equation}
+The estimate holds for arbitrary antiperiodic $q$, including the pressure field. Its second application is to vertices of the finite box.
+
+\begin{corollary}[Sign consistency of every near-maximizing word]\label{cor:sign-consistency}
+Fix $C_0$. If $f=A_n\sigma$ and $d_\sigma=B_n-V_n(f)\le C_0/n^2$, then, for all sufficiently large even $n$,
+\begin{equation}\label{eq:sign-consistency}
+ \sigma_j=\sgn(T_nf)_j,\qquad \min_j|(T_nf)_j|\ge c\log n/n.
+\end{equation}
+\end{corollary}
+\begin{proof}
+Since $\av{fT_nf}\le A_n\av{|T_nf|}$, one has $0\le\mathscr G_n(f)\le d_\sigma$. Lemma~\ref{lem:midpoint} gives the lower bound. If a sign were wrong, the support vertex $u=A_n\sgn(T_nf)$ would satisfy
+\[
+ d_\sigma\ge V_n(u)-V_n(f)
+ =\av{(u-f)T_nf}+V_n(u-f)\ge c\log n/n^2,
+\]
+contradicting the assumed deficit. Compatible antipodal signs are automatic because the field is nonzero.
+\end{proof}
+
+\subsection{Equilibrium stresses}
+Write $z=C+d$, where $C$ is half-periodic and $d$ antiperiodic, and put
+\[
+ D_j=d_j+d_{j+1},\qquad B_j=C_{j+1}-C_j.
+\]
+The only possible active constraints are $4|d_i|^2\le4$ and $|D_j\pm B_j|^2\le4$, since all remote pairs are strictly inactive by \eqref{eq:nonlocal-margin}. The pressure bounds imply
+\begin{equation}\label{eq:crossing-separation}
+ |D_j|^2+|B_j|^2=4-4a^2+O(n^{-3})<4.
+\end{equation}
+Thus the two crossing constraints at a site cannot both be active.
+
+Inward scaling has derivative $-8$ on every active squared-length constraint, so the Mangasarian--Fromovitz constraint qualification holds and nonnegative KKT multipliers exist; see \cite[Theorem~12]{cambie} for this argument in the same optimization problem. Denote the matching multipliers by $\lambda_i^M$ and the two crossing multipliers by $\lambda_j^\pm$. Define the complex edge stress
+\begin{equation}\label{eq:edge-stress}
+ S_j=2\{(\lambda_j^+-\lambda_j^-)D_j+(\lambda_j^++\lambda_j^-)B_j\}.
+\end{equation}
+Center stationarity says $D_CF[U]=\sum_{j<m}S_j\cdot\delta U_j$ for every half-periodic $U$. Complementarity and (\ref{eq:crossing-separation}) show that $S_j$ is zero or a real multiple of one of $D_j\pm B_j$. Their directions and the pressure scales give
+\begin{equation}\label{eq:stress-tangential}
+ |\Ima(e^{-i\mu_j}S_j)|\le\varepsilon_n|S_j|,
+ \qquad \varepsilon_n\le C\sqrt{\Lambda_n}/n^2.
+\end{equation}
+
+\begin{lemma}[Uniform edge-stress estimate]\label{lem:stress}
+At every pressure-localized maximizer,
+\begin{equation}\label{eq:stress-asymptotic}
+ S_j=\frac{e^{i\mu_j}}{\sin a}\,g_j+O(1)
+\end{equation}
+uniformly in $j$ and $n$.
+\end{lemma}
+\begin{proof}
+Let $g_C=T_nq(C)$, $p=p(C)$, and $h=T_np$. The derivative of the edge normal form is
+\begin{equation}\label{eq:quadratic-stress}
+ DP(C)[U]=\sum_{j<m}S_j^0\cdot\delta U_j,
+ \qquad S_j^0=\frac{e^{i\mu_j}}{\sin a}((g_C)_j-ih_j).
+\end{equation}
+The vanishing first-harmonic weight gives $\mathsf P_1h=0$. Both $q(C)$ and $p(C)$ are pointwise bounded, so $g_C,h$ are bounded by \eqref{eq:field-smoothing}. The physical and de-rotated centers differ only by a small amount in energy:
+\begin{equation}\label{eq:center-rotation}
+ \A(C-c)\le C\Lambda_n/n^4,\qquad
+ \norm{g_C-g}_\infty\le C\sqrt{n\A(C-c)}=o(n^{-1}).
+\end{equation}
+Apply \eqref{eq:product-energy} to $C=e^{i\theta}c$ for the first bound. For the second, use \eqref{eq:discrete-norms} and the $\ell^2$-to-$\ell^\infty$ bound for $T_n$. Constant center means do not affect these estimates.
+
+For $X_{jk}=X_j-X_k$, antipodal pairing yields the exact derivative
+\[
+ D_CF[U]=-2\Rea\sum_{j<k}\frac{C_{jk}U_{jk}}{d_{jk}^2-C_{jk}^2}.
+\]
+Both $C_{jk}/w_{jk}=O(n^{-1})$ and $d_{jk}/w_{jk}-1=O(n^{-1})$, uniformly. Consequently
+\begin{equation}\label{eq:cut-error}
+ |D_CF[U]-DP(C)[U]|
+ \le\frac C{n^2}\sum_{j<k}\left|\frac{U_{jk}}{w_{jk}}\right|.
+\end{equation}
+Summing along cyclic windows gives
+\begin{equation}\label{eq:window-bounds}
+ \sum_{j<k}\left|\frac{U_{jk}}{w_{jk}}\right|\le Cn^2\TV(U),
+ \qquad \A(U)\le Cn^2\Lambda_n\TV(U)^2.
+\end{equation}
+Indeed, at offset $k\le n/2$, the sum of the numerator moduli is at most $k\TV(U)$, while the denominator is at least $4k/n$.
+
+Apply (\ref{eq:cut-error}) to indicators of successive half-period intervals, extended half-periodically, in each real coordinate direction. Their total variation is bounded. Equations (\ref{eq:quadratic-stress}) and center stationarity then imply
+\begin{equation}\label{eq:stress-constant}
+ S_j=\ell+S_j^0+R_j,\qquad \norm R_\infty\le C,
+\end{equation}
+for one constant complex vector $\ell$. Consequently $\norm S_\infty\le|\ell|+Cn$.
+
+Take the reference tangential component of (\ref{eq:stress-constant}) and project onto the first harmonic. Since $\mathsf P_1h=0$,
+\[
+ \Ima(e^{-i\mu}\ell)
+ =\mathsf P_1\Ima(e^{-i\mu}S)-\mathsf P_1\Ima(e^{-i\mu}R).
+\]
+The left side has normalized squared norm $|\ell|^2/2$. Thus (\ref{eq:stress-tangential}) gives
+\[
+ |\ell|\le C\varepsilon_n(|\ell|+Cn)+C,
+\]
+so $|\ell|=O(1)$. Taking the normal component in (\ref{eq:stress-constant}) now gives $\Rea(e^{-i\mu_j}S_j)=(g_C)_j/\sin a+O(1)$. Its tangential component is $O(\varepsilon_n n)=o(1)$ by (\ref{eq:stress-tangential}). Replace $g_C$ by $g$ using (\ref{eq:center-rotation}) to obtain (\ref{eq:stress-asymptotic}).
+\end{proof}
+
+\subsection{Saturation and the active graph}
+\begin{proposition}[Active constraints]\label{prop:active}
+For every even $n\ge n_{\mathrm{even}}$, every maximizer has complete diameter graph $E_\sigma$, where $\sigma=\sgn(T_nq(c))$. Its $n$ active squared-length constraints have independent gradients and a unique strictly positive KKT multiplier family. Moreover,
+\[
+ 0\le B_n-V_n(A_n\sigma)\le\mathscr G_n(q(c))\le Cn^{-2}.
+\]
+\end{proposition}
+\begin{proof}
+By \eqref{eq:pressure-gap} and Lemma~\ref{lem:stress}, $\norm S_\infty\le n/2+O(1)$. The root-force estimate gives the direct radial derivative, with centers fixed,
+\[
+ \partial_{r_i}F=2(n-1)+O(\log n).
+\]
+Each of its two crossing contributions has magnitude at most the corresponding $|S_j|$: with at most one nonzero crossing multiplier, the semidiameter stress is either $S_j$ or $-S_j$. Hence radial KKT stationarity gives
+\begin{equation}\label{eq:radial-stress}
+ 8r_i\lambda_i^M\ge 2(n-1)-|S_{i-1}|-|S_i|-C\log n
+ \ge n-C\log n>0.
+\end{equation}
+Complementarity forces every $r_i=1$.
+
+Equations (\ref{eq:potential-margin}) and (\ref{eq:stress-asymptotic}) give $|S_i|\ge\tfrac12\log n-C$ and
+$\sgn\Rea(e^{-i\mu_i}S_i)=\sgn g_i$. Thus every site has exactly one active crossing, with strictly positive multiplier and sign
+\begin{equation}\label{eq:model-deficit}
+ \sigma_i=\sgn g_i,\qquad
+ 0\le B_n-V_n(A_n\sigma)\le\mathscr G_n(q)\le Cn^{-2}.
+\end{equation}
+The complete diameter graph is $E_\sigma$. In fact the selected crossing has length two, so $|S_i|=4\lambda_i^\times$ and $\lambda_i^\times\ge\tfrac18\log n-C$.
+
+It remains to prove independence of the active gradients. In any linear dependence, center variations make $2a_j\sigma_j(D_j+\sigma_jB_j)$ a constant vector. The selected crossing directions include two nonparallel directions, so that constant is zero and all crossing coefficients $a_j$ vanish. Independent semidiameter variations then kill every matching coefficient.
+
+The displayed cutoff is supplied by the quantitative estimates in the Lean development. For $n\ge n_{\mathrm{even}}$, these give saturated matching coordinates, exactly one active crossing at each site, the strict pressure margin, positive radial gain, and the fixed-Schur chart and geometric bounds. They imply independence of the active gradients and existence of the unique multiplier family; the pointwise crossing and radial response inequalities make every coefficient strictly positive. Transport back to the original points preserves these coefficients. Appendix~\ref{app:formalisation} records this quantitative proof route.
+
+\end{proof}
+
+The graph is connected: contracting its matching edges leaves the cyclic half-period index graph. Its degrees are
+\begin{equation}\label{eq:degree}
+ \deg(j)=1+\ind_{\{\sigma_{j-1}=1\}}+\ind_{\{\sigma_j=-1\}}.
+\end{equation}
+
+
+We have obtained an active word with deficit $O(n^{-2})$. We next study the finite quadratic model at precisely this deficit scale.
+
+The pressure estimate also gives the physical-coordinate bound needed later. By \eqref{eq:center-rotation} and the boundedness of $\Pi$,
+\begin{equation}\label{eq:physical-fiber-input}
+ \E(\theta)+\A(\Pi C)\le K/n^2,\qquad
+ \norm{\dd C}_\infty\le C/n^2,\qquad
+ \norm{q(C)}_\infty+\norm{p(C)}_\infty\le C.
+\end{equation}
+Here $K$ is independent of the maximizer. Indeed,
+$\A(\Pi C)\le2\A(\Pi c)+12\A(C-c)$, and the remaining bounds follow from
+\eqref{eq:pressure-pointwise} and the edge definitions. This estimate fixes the transition from the pressure coordinates to the physical Schur coordinates.
+
+% END sections/07_active_constraints.tex
+
+% BEGIN sections/08_selection.tex
+\section{The finite sign model}\label{sec:selection}
+We now identify the finite maximum and prove the local improvement statement that will be transferred to geometry. For an antiperiodic word $\sigma$, write
+\[
+ f_\sigma=A_n\sigma,\qquad d_\sigma=B_n-V_n(f_\sigma),\qquad
+ d_H(\sigma,\tau)=\#\{0\le j<m:\sigma_j\ne\tau_j\}.
+\]
+The relevant assertion is the following.
+
+\begin{proposition}[Two-site improvement]\label{prop:finite-improvement}
+For every fixed $C_0>0$ and all sufficiently large even $n$, a word with $d_\sigma\le C_0/n^2$ is either balanced, up to the cyclic and reflection symmetries, or admits a word $\tau$ such that
+\begin{equation}\label{eq:finite-improvement}
+ d_H(\sigma,\tau)\le2,\qquad
+ V_n(f_\tau)-V_n(f_\sigma)\ge c_*/n^2.
+\end{equation}
+Here $c_*>0$ is independent of $n$. In particular, the new word satisfies $0\le d_\tau\le d_\sigma$.
+\end{proposition}
+
+The proof has two parts. Fixed-margin estimates first prescribe the signs outside six short arcs. Within an arc a terminal interval can be moved one site, while a word with one transition per arc can be improved by balancing its three block lengths. In both cases only two independent signs change. We prove the localization estimates before describing these moves.
+
+\subsection{Concentration in the third harmonic}
+For the next two estimates we use the continuous average $\ac f=(2\pi)^{-1}\int_0^{2\pi}f(t)\,dt$ and Fourier coefficient $\widehat f(p)=\ac{fe^{-ipt}}$. Put
+\[
+ A=\frac\pi2,\qquad
+ \mathcal F=\{f\in L^\infty(\T;\R):|f|\le A,\ f(t+\pi)=-f(t)\},
+ \qquad
+ \V(f)=\sum_{\substack{p\ge3\\p\text{ odd}}}\frac{|\widehat f(p)|^2}{p+1}.
+\]
+Let $T$ have multiplier $1/(|p|+1)$ at odd $|p|\ge3$, and zero elsewhere. Thus $\V(f)=\ac{fTf}/2$.
+
+\begin{lemma}[Third-harmonic test]\label{lem:third-test}
+For $f\in\mathcal F$,
+\begin{equation}\label{eq:third-test}
+ \V(f)>\frac{531}{2000}\quad\Longrightarrow\quad
+ |\widehat f(3)|>\frac{24}{25}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+After translating the argument, assume $\widehat f(3)=r\ge0$. Put $b=|\widehat f(1)|$, $\delta=1-r$, and $B_0=\pi^2/8$. Since $A\ac{|\cos pt|}=1$, each nonzero Fourier coefficient has modulus at most one. Parseval gives $\sum_{p\ge1,\,p\text{ odd}}|\widehat f(p)|^2\le B_0$.
+
+The function
+\[
+ G(z)=\tan\left(\sum_{\substack{p\ge1\\p\text{ odd}}}\widehat f(p)z^p\right)
+\]
+maps the disk into itself and is odd. Indeed, twice the real part of its argument is the Poisson extension of $f$, so that argument lies in the strip $|\Re z|<\pi/4$. Write $G(z)=z\varphi(z^2)$, with $|\varphi|\le1$. Schwarz--Pick at the origin gives
+\[
+ \left|\widehat f(3)+\frac{\widehat f(1)^3}{3}\right|\le1-b^2,
+ \qquad \delta\ge b^2-b^3/3.
+\]
+For $f_*(t)=A\sgn\cos3t$ and $d=f_*-f$, we have $d\cos3t\ge0$ and $\ac{d\cos3t}=\delta$. The identity
+\[
+ e^{-i(p+6)t}+e^{-ipt}=2\cos3t\,e^{-i(p+3)t}
+\]
+therefore implies $|\widehat d(p+6)+\widehat d(p)|\le2\delta$. Taking $p=-1,1$ yields $|\widehat f(5)|,|\widehat f(7)|\le b+2\delta$. Use these bounds for the fifth and seventh coefficients, and bound the remaining weights by $1/10$. We obtain
+\begin{equation}\label{eq:third-upper}
+ \V(f)\le U(\delta,b):=
+ \frac{B_0}{10}+\frac3{20}(1-\delta)^2
+ -\frac{b^2}{120}+\frac{11}{30}b\delta+\frac{11}{30}\delta^2.
+\end{equation}
+If $\delta\ge4/25$, the coarser bound $B_0/6+(1-\delta)^2/12<531/2000$ suffices. For $1/25\le\delta\le4/25$, use $b\le1$ to obtain $\delta\ge(2/3)b^2$. The bound in \eqref{eq:third-upper} is increasing for $0\le b\le\sqrt{3\delta/2}$ on this interval, since its $b$-derivative is $-b/60+11\delta/30>0$. Hence
+\begin{equation}\label{eq:scalar-W}
+ \V(f)\le W(\delta):=\frac{\pi^2}{80}+\frac3{20}-\frac5{16}\delta
+ +\frac{11\sqrt6}{60}\delta^{3/2}+\frac{31}{60}\delta^2.
+\end{equation}
+The function $W$ is convex, since $W''(\delta)=31/30+(11\sqrt6/80)\delta^{-1/2}>0$. It is therefore enough to check its two endpoint values. The rational bounds $\pi<22/7$ and $\sqrt6<49/20$ give
+\[
+ W(1/25)<\frac{162551}{612500}<\frac{531}{2000},\qquad
+ W(4/25)<\frac{487751}{1837500}<\frac{531}{2000}.
+\]
+Thus $\delta\ge1/25$ is incompatible with the assumed energy.
+\end{proof}
+
+\subsection{Two supporting functions}
+The convolution kernel of $T$ is
+\begin{equation}\label{eq:continuous-kernel}
+ K(t)=\sum_{\substack{p\ge3\\p\text{ odd}}}\frac{\cos pt}{p+1}
+ =-\frac12\cos t[1+\log(2\sin t)]
+   +\frac12\left(\frac\pi2-t\right)\sin t,
+ \qquad 0<t<\pi.
+\end{equation}
+Extend it evenly and antiperiodically. Then $Tf(t)=2\ac{K(t-\cdot)f(\cdot)}$, and $K\in L^1(\T)$. Define the two fixed functions
+\begin{equation}\label{eq:fixed-witness}
+ H_b(u)=\cos3u+b\sin3u-2K(u),\qquad
+ J_b=A\ac{|H_b|},\qquad b\in\{1/2,1\}.
+\end{equation}
+The two norms needed below are
+\begin{equation}\label{eq:fixed-norms}
+ J_{1/2}<\frac9{10},\qquad J_1<\frac{97}{80}.
+\end{equation}
+
+\begin{lemma}[Six-arc sign test]\label{lem:sign-test}
+Suppose $f\in\mathcal F$ and $\widehat f(3)e^{3i\alpha}=r\ge24/25$. At circular distance at least $1/8$ from the zeros of $\cos3(t-\alpha)$,
+\begin{equation}\label{eq:sign-test}
+ \sgn(Tf)(t)=\sgn\cos3(t-\alpha),\qquad |(Tf)(t)|>\frac1{50}.
+\end{equation}
+The statement applies to every $f\in\mathcal F$ with the indicated Fourier coefficient.
+\end{lemma}
+\begin{proof}
+Set $\alpha=0$ by translation and first take $0\le\theta\le\pi/6-1/8$. For $\beta=3\theta$ and $g=Tf$, the Fourier moments give the exact identity
+\[
+ \ac{f(s)H_b(\theta-s)}=r(\cos\beta+b\sin\beta)-g(\theta).
+\]
+Consequently
+\begin{equation}\label{eq:support-plane}
+ g(\theta)\ge r(\cos\beta+b\sin\beta)-J_b.
+\end{equation}
+For $0\le\beta\le\pi/4$, choose $b=1/2$; concavity and the two endpoint values show that $\cos\beta+\tfrac12\sin\beta\ge1$. Hence $g>24/25-9/10=3/50$. For $\pi/4\le\beta\le\pi/2-3/8$, choose $b=1$. On this interval,
+\[
+ \cos\beta+\sin\beta\ge\sin(3/8)+\cos(3/8)
+ \ge\frac{1327}{1024}>\frac{129}{100},
+\]
+using $\sin x+\cos x\ge1+x-x^2/2-x^3/6$ at $x=3/8$. Thus
+\[
+ g(\theta)>\frac{24}{25}\frac{129}{100}-\frac{97}{80}
+ =\frac{259}{10000}>\frac1{50}.
+\]
+Reflection handles negative $\theta$. The transformations $f(t)\mapsto(-1)^kf(t+k\pi/3)$ preserve the positive real third coefficient and cover the other lobes.
+\end{proof}
+
+The two tests have different purposes. Lemma~\ref{lem:third-test} locates the energy in one Fourier coefficient. Lemma~\ref{lem:sign-test} then bounds the potential by supporting inequalities for the convex set of triples
+\[
+ (x,y,z)=\bigl(\ac{f\cos3t},\ac{f\sin3t},(Tf)(0)\bigr).
+\]
+The two fixed functions yield its supporting inequalities $x+y/2-z\le J_{1/2}$ and $x+y-z\le J_1$. Testing these planes on the arc $(r\cos\beta,r\sin\beta)$ gives \eqref{eq:support-plane}. Appendix~\ref{app:fixed-duals} proves \eqref{eq:fixed-norms} by locating the zeros of the two supporting functions and enclosing ten primitive values.
+
+\subsection{Monotonicity of the finite kernel}\label{subsec:kernel-propagation}
+Fix the arc radius $h=\pi/24$. The sign test applies outside the smaller radius $\rho=1/8$, and the relevant separation interval is
+\[
+ \rho=\frac18<h=\frac\pi{24},\qquad
+ J=[\pi/3-2h,\pi/3+2h]=[\pi/4,5\pi/12].
+\]
+For $0<t<\pi/2$, direct differentiation of \eqref{eq:continuous-kernel} gives
+\begin{align}
+ K'(t)&=\tfrac12\sin t\log(2\sin t)
+       +\tfrac12\cos t(\pi/2-t-\cot t),\label{eq:kernel-derivative}\\
+ \left(\frac{2K(t)}{\cos t}\right)'&=\sec^2t(\pi/2-t-\cot t)<0,
+ &K''(t)+K(t)&=\frac{\cos t}{2\sin^2t}.
+ \label{eq:kernel-ode}
+\end{align}
+The endpoint values
+\[
+ K(\pi/4)=\frac{\sqrt2}{4}\left(\frac\pi4-1-\frac12\log2\right)<0,
+ \qquad
+ K'(\pi/4)=\frac{\sqrt2}{4}\left(\frac12\log2+\frac\pi4-1\right)>0
+\]
+and
+\[
+ \frac{2K(\pi/12)}{\cos(\pi/12)}
+ =-1+\frac12\log(2+\sqrt3)+\frac{5\pi}{12}(2-\sqrt3)>0
+\]
+determine the signs needed below. For the last inequality, $\sqrt3<26/15$, $\pi>157/50$, and
+$\arctanh x>x+x^3/3+x^5/5$ at $x=15/26$ give the positive lower bound $6956791/2673309600$. Equation \eqref{eq:kernel-derivative} gives the initial negative derivative, and \eqref{eq:kernel-ode} propagates the other signs. Thus
+\begin{equation}\label{eq:kernel-signs}
+ K>0,\quad K'<0\quad(0<t\le2h),\qquad
+ K<0,\quad K'>0\quad(t\in J).
+\end{equation}
+All endpoint inequalities are strict, so they persist on a fixed small enlargement of the intervals.
+
+For the finite multiplier, define
+\begin{equation}\label{eq:finite-kernel}
+ K_n(r)=\frac12\sum_{p=0}^{n-1}\gamma_{p,n}\cos(2\pi pr/n).
+\end{equation}
+It is even and satisfies $K_n(r+m)=-K_n(r)$. Put $b=2\pi/n$. For $1\le r\le m-1$ the exact difference equation is
+\begin{equation}\label{eq:finite-kernel-ode}
+ K_n(r+1)-2\cos b\,K_n(r)+K_n(r-1)
+ =2\sin^2(b/2)\frac{\cos(rb)}{\sin^2(rb)}.
+\end{equation}
+Indeed multiplication of \eqref{eq:full-multiplier} by $2\cos(pb)-2\cos b$ cancels the sine denominators. One then uses
+\[
+ \sum_{p=0}^{n-1}p(n-p)e^{2\pi ipr/n}
+ =-\frac n{2\sin^2(\pi r/n)}
+\]
+and projection onto odd frequencies. Let $R=\lfloor(m-1)/2\rfloor$. Reflection at the midpoint and telescoping in \eqref{eq:finite-kernel-ode} give, for $0\le r\le R$,
+\begin{equation}\label{eq:wronskian}
+ \cos(rb)K_n(r+1)-\cos((r+1)b)K_n(r)
+ =-2\sin^2(b/2)\sum_{s=r+1}^{R}\cot^2(sb).
+\end{equation}
+Write $k_r=K_n(r)$. For $0\le rb<(r+1)b<\pi/2$, \eqref{eq:wronskian} gives
+\[
+ \frac{k_{r+1}}{\cos((r+1)b)}\le\frac{k_r}{\cos(rb)}.
+\]
+Lemma~\ref{lem:spectral-order} gives monotone odd-frequency weights with $\gamma_{p,n}\le C/p$ on $p\le n/2$. Abel summation bounds their tail by $C/(P|\sin t|)$. Fixed-frequency convergence therefore gives $k_r\to K(rb)$ uniformly on compact subintervals of $(0,\pi)$.
+
+Choose $\theta_+>2h$ sufficiently close to $2h=\pi/12$ that $K(\theta_+)>0$, and put $s_n=\lfloor\theta_+/b\rfloor$. Then $k_{s_n}\to K(\theta_+)>0$. The ratio inequality propagates positivity to every $0\le r\le s_n$; since cosine strictly decreases there,
+\[
+ 0<k_{r+1}\le\frac{\cos((r+1)b)}{\cos(rb)}\,k_r<k_r
+ \qquad(0\le r<s_n).
+\]
+Thus the positive, strictly decreasing interval extends beyond $2h$ and includes the diagonal $r=0$, with a uniform positive lower bound.
+
+For the negative interval, $K(\pi/4)<0$ and $K'(\pi/4)>0$ allow fixed points $0<\alpha<\beta<\pi/4$ with $K(\alpha)<K(\beta)<0$. Put $p_n=\lfloor\alpha/b\rfloor$ and $q_n=\lfloor\beta/b\rfloor$. For large $n$, value convergence gives $k_{p_n}<k_{q_n}<0$, and the ratio inequality propagates negativity from $p_n$ to every later site below $\pi/2$. On these sites \eqref{eq:finite-kernel-ode} yields
+\[
+ (k_{r+1}-k_r)-(k_r-k_{r-1})
+ =2(\cos b-1)k_r
+   +2\sin^2(b/2)\frac{\cos(rb)}{\sin^2(rb)}>0.
+\]
+Since $k_{q_n}-k_{p_n}>0$, some forward difference between $p_n$ and $q_n$ is positive; all subsequent differences whose endpoints remain below $\pi/2$ are then positive. Because $\beta<\inf J$ and $\sup J<\pi/2$, this proves strict increase on a fixed enlargement of $J$. Shrinking that enlargement if necessary, uniform value convergence also gives $k_r\le-c<0$ there, with $c$ independent of $n$. Evenness and antiperiodicity give the corresponding assertions on the reflected intervals.
+
+\subsection{Localization of a near-maximizing word}
+For $q\in\mathcal Q_n$, set $\bar q(t)=(A/A_n)q_j$ on $[2ja,2(j+1)a)$. Its continuous Fourier coefficients are
+\[
+ \widehat{\bar q}(p)=\frac A{A_n}\sinc(pa)\widehat q_p.
+\]
+This formula uses the midpoint coefficients, including their signed aliases. After a fixed signed-frequency truncation, the low-frequency difference tends to zero; the energy tails are $O(P^{-1})$, and the potential tails are $O(P^{-1/2})$ by Cauchy--Schwarz. Consequently,
+\begin{equation}\label{eq:uniform-sampling}
+ \sup_{q\in\mathcal Q_n}|V_n(q)-\V(\bar q)|\to0,
+ \qquad
+ \sup_{q\in\mathcal Q_n}\max_j|(T_nq)_j-(T\bar q)(\mu_j)|\to0.
+\end{equation}
+To apply the tests, we need a lower bound for $B_n$ independent of the maximizing word. Sample the third square wave and keep its first nine positive Fourier contributions. This gives
+\begin{equation}\label{eq:trial-threshold}
+ \liminf B_n\ge\sum_{r=1,3,\ldots,17}\frac1{r^2(3r+1)}
+ =\frac{11460107888773}{43158748192560}>\frac{531}{2000}.
+\end{equation}
+For a vertex of deficit at most $C_0/n^2$, the uniform convergence in \eqref{eq:uniform-sampling} and the strict inequality in \eqref{eq:trial-threshold} allow both scalar tests to be applied for all sufficiently large $n$. For a phase $\alpha_n$, outside the six arcs of radius $\rho=1/8$ around the zeros of $\cos3(t-\alpha_n)$, its finite potential has the prescribed sign and modulus at least $1/100$. Corollary~\ref{cor:sign-consistency} makes the word itself correct there. The phase locates the arcs; it does not continuously rotate the finite grid.
+
+
+\subsection{A terminal interval move}
+Choose a descending arc $I$ of radius $h$. Replace the word on $I$ by $-A_n$, and on the antipodal arc by $A_n$, leaving the other entries unchanged. Call the resulting background $b$. If $E\subset I$ is the original set of positive sites, expansion of the quadratic form gives
+\begin{equation}\label{eq:compression-expansion}
+ V_n(f_\sigma)=V_n(b)+\frac{4A_n}{n}\sum_{j\in E}(T_nb)_j
+       +\frac{16A_n^2}{n^2}\sum_{i,j\in E}K_n(i-j).
+\end{equation}
+We need a monotone background potential even when the signs in the other arcs oscillate.
+
+\begin{lemma}\label{lem:background}
+For all sufficiently large $n$, the background above satisfies
+\begin{equation}\label{eq:background-monotone}
+ (T_nb)_{j+1}-(T_nb)_j\le-c/n\qquad(j,j+1\in I).
+\end{equation}
+The constant is independent of the signs in the other arcs.
+\end{lemma}
+\begin{proof}
+By antiperiodicity,
+\[
+ \dd(T_nb)_j=\frac4n\sum_{s\text{ in a half-circle}}
+                 K_n(j-s)(b_{s+1}-b_s).
+\]
+Consider another ascending arc $[L,R]$ and put $\phi_s=K_n(j-s)$. The kernel is negative and increasing there. The exterior signs give $b_{L-1}=-A_n$ and $b_{R+1}=A_n$. Summation by parts, including the exterior endpoints, gives
+\begin{align}\label{eq:background-endpoints}
+ \sum_{s=L-1}^R\phi_s(b_{s+1}-b_s)
+ &=A_n(\phi_R+\phi_{L-1})
+   -\sum_{s=L}^R(\phi_s-\phi_{s-1})b_s\notag\\
+ &\le2A_n\phi_R<0.
+\end{align}
+On the other descending arc, the kernel is positive and increasing, and the corresponding upper bound is $-2A_n\phi_{L-1}<0$. The background jump at the left endpoint of $I$ also contributes negatively. The uniform kernel-value margins in Section~\ref{subsec:kernel-propagation}, together with the factor $4/n$, give \eqref{eq:background-monotone}. Only the bound $|b_s|\le A_n$ was used inside each arc.
+\end{proof}
+
+\begin{lemma}[Terminal interval slide]\label{lem:terminal-slide}
+If the positive sites in a descending arc do not form an initial interval, there is a word differing at two independent sites whose finite value is larger by at least $c_1/n^2$. The analogous statement holds with signs reversed on an ascending arc.
+\end{lemma}
+\begin{proof}
+Let $[L,R]$ be the rightmost positive component. Since the positive set $E$ is not initial, $L$ is not the left endpoint of the arc and $L-1\notin E$. Replace $[L,R]$ by $[L-1,R-1]$:
+\[
+ E'=(E\setminus[L,R])\cup[L-1,R-1].
+\]
+Only the sites $L-1$ and $R$, and their antipodes, change sign. Distances within the component are unchanged. All other positive sites lie to its left, so their distances to the translated component decrease by one. The decreasing kernel makes the last term of \eqref{eq:compression-expansion} nondecreasing. The change in the background term is
+\[
+ \frac{4A_n}{n}\bigl((T_nb)_{L-1}-(T_nb)_R\bigr)
+ \ge\frac{4A_nc}{n^2}(R-L+1)\ge\frac{c_1}{n^2},
+\]
+by Lemma~\ref{lem:background}. This proves the claim.
+\end{proof}
+
+\subsection{Balancing the block lengths}
+If every arc has the prescribed monotonicity, it contains exactly one transition, possibly at an endpoint. After cyclic relabeling the half-circle word is $+^{r_1}-^{r_2}+^{r_3}$, where $r_1+r_2+r_3=m$. Introduce the integrated kernel
+\begin{equation}\label{eq:integrated-kernel}
+ S_n(r)=\frac12\sum_{p:\gamma_{p,n}>0}\gamma_{p,n}
+ \left(\frac{2A_n}{n}\right)^2
+ \frac{\cos(2\pi pr/n)}{\sin^2(\pi p/n)}.
+\end{equation}
+The Fourier formula for the three jumps yields
+\begin{align}
+ V_n(\mathbf r)&=3S_n(0)-2\sum_{i=1}^3 S_n(r_i),
+       \label{eq:three-block-value}\\
+ S_n(r+1)-2S_n(r)+S_n(r-1)&=-\frac{16A_n^2}{n^2}K_n(r).
+       \label{eq:integer-convexity}
+\end{align}
+The block lengths lie in the interval corresponding to a fixed small enlargement of $J$. On that interval $K_n$ is strictly negative. Thus the second difference in \eqref{eq:integer-convexity} is at least $\kappa_0/n^2$, for a fixed $\kappa_0>0$.
+
+Write $\Delta S_n(r)=S_n(r+1)-S_n(r)$. If $r_i\ge r_j+2$, replacing $(r_i,r_j)$ by $(r_i-1,r_j+1)$ increases the value by
+\begin{equation}\label{eq:balance-gain}
+ 2\bigl[\Delta S_n(r_i-1)-\Delta S_n(r_j)\bigr]
+ \ge\frac{2\kappa_0}{n^2}(r_i-r_j-1)
+ \ge\frac{2\kappa_0}{n^2}.
+\end{equation}
+At most two block boundaries move, each by one site, so at most two independent signs change. The new block lengths stay in the same interval.
+
+\begin{proof}[Proof of Proposition~\ref{prop:finite-improvement}]
+The localization argument applies to every vertex of deficit at most $C_0/n^2$. If some arc is not monotone, use Lemma~\ref{lem:terminal-slide}. Otherwise the word has three blocks, and \eqref{eq:balance-gain} applies unless their lengths differ by at most one. In the remaining case the word is balanced. Take $c_*=\min(c_1,2\kappa_0)$. Since $V_n(f_\tau)\le B_n$, an improving move automatically satisfies $0\le d_\tau\le d_\sigma$.
+\end{proof}
+
+\begin{corollary}\label{cor:model-maximum}
+For all sufficiently large even $n$,
+\begin{equation}\label{eq:model-exact}
+ B_n=V_n(A_n\sigma^{\bal}).
+\end{equation}
+Every maximizing vertex is balanced up to the stated symmetries.
+\end{corollary}
+\begin{proof}
+For $n\ge6$ each independent coordinate has a strictly positive quadratic coefficient, so every box maximum is a vertex. Apply Proposition~\ref{prop:finite-improvement} with zero deficit. A nonbalanced maximizing word would have a strictly better competitor.
+\end{proof}
+
+For geometric selection we will use the proposition rather than a classification of all finite near-maximizers. Its gain is of order $n^{-2}$, and its competitor differs at only two sites. The next section constructs a common set of continuous parameters on which this gain can be compared with the nonlinear objective.
+
+% END sections/08_selection.tex
+
+% BEGIN sections/09_fibers.tex
+\section{Common feasible coordinates}\label{sec:fibers}
+The finite improving move changes the diameter graph. To compare the two geometric configurations, we need coordinates whose domain does not depend on the word. We choose the free center variable to be its fixed Schur projection. This choice makes both closure and the quadratic splitting exact.
+
+Let
+\[
+ \HH=\{v\in\C^n:v_{j+m}=v_j,\ \av v=0,\ q(v)=0\}.
+\]
+By \eqref{eq:closure-harmonic}, this real space has dimension $m-2$. The angle variable $\theta$ is real, mean-zero, and half-periodic, of dimension $m-1$. Put
+\begin{equation}\label{eq:fiber-domain}
+ \UU=\{(\theta,v):\av\theta=0,\ \theta_{j+m}=\theta_j,
+                 \ v\in\HH,\ \E(\theta)+\A(v)<L_n^2/n^2\}.
+\end{equation}
+Thus $\UU$ is a convex open set of dimension $n-3$. Its radius is larger than every fixed inner scale $K/n^2$, but tends to zero. Construction and concavity will hold on $\UU$; the comparison of two words will use a fixed inner scale.
+
+\subsection{The crossing equations}
+Set
+\[
+ \varepsilon_n=\frac{2\sin a}{n},\qquad
+ \kappa_n=\varepsilon_n^{-1},\qquad
+ R_0=2(1-\cos a),\qquad \kappa_nR_0=A_n.
+\]
+For $(\theta,v)\in\UU$, define
+\begin{equation}\label{eq:fiber-geometry}
+ \begin{gathered}
+ d_j=w_je^{i\theta_j},\qquad
+ \vartheta_j=\frac{\theta_j+\theta_{j+1}}2,\qquad
+ a_j=a+\frac{\dd\theta_j}2,\qquad L_j=2\cos a_j,\\
+ X_j=L_j\cos\vartheta_j,\qquad Y_j=L_j\sin\vartheta_j,
+ \qquad p_v=p(v).
+ \end{gathered}
+\end{equation}
+In particular, $e^{-i\mu_j}(d_j+d_{j+1})=X_j+iY_j$. For a fixed word $\sigma$, consider the equations
+\begin{equation}\label{eq:schur-fixedpoint}
+ q_j=\sigma_j\kappa_n
+ \left[\sqrt{4-(Y_j+\sigma_j\varepsilon_np_j)^2}-X_j\right],
+ \qquad p=p_v+\mathsf Jq.
+\end{equation}
+The square root is positive. Once $q=q_\sigma(\theta,v)$ is found, put
+\begin{equation}\label{eq:schur-chart}
+ C_\sigma=c^0(q_\sigma)+v,\qquad
+ \mathcal Z_\sigma=d+C_\sigma,\qquad
+ \Psi_\sigma=F(\mathcal Z_\sigma)-n\log n.
+\end{equation}
+The lift is closed, and \eqref{eq:schur-fixedpoint} says precisely that the selected crossing has length two. Its only nonlocal dependence is through the complex number $\widehat q_1$.
+
+\begin{proposition}[Feasible coordinates]\label{prop:schur-chart}
+For all sufficiently large even $n$, every antiperiodic word $\sigma$, and every $(\theta,v)\in\UU$, equation \eqref{eq:schur-fixedpoint} has a unique solution in
+\begin{equation}\label{eq:fiber-q-window}
+ \norm{q-A_n\sigma}_\infty\le CL_n/n.
+\end{equation}
+The solution depends smoothly on the parameters. The configuration $\mathcal Z_\sigma$ is feasible and has complete diameter graph $E_\sigma$. Moreover,
+\begin{equation}\label{eq:fiber-schur-identities}
+ q(C_\sigma)=q_\sigma,\qquad \Pi C_\sigma=v,\qquad
+ P(C_\sigma)=V_n(q_\sigma)+P(v).
+\end{equation}
+All constants are uniform in $\sigma$.
+\end{proposition}
+\begin{proof}
+The norm estimates of Section~\ref{sec:normal} give
+\begin{equation}\label{eq:fiber-basebounds}
+ \norm\theta_\infty\le\frac{CL_n\sqrt{\Lambda_n}}{n^2},\qquad
+ \norm{\dd\theta}_\infty\le\frac{CL_n}{n^2},\qquad
+ \norm{p_v}_\infty\le CL_n.
+\end{equation}
+Let $\mathcal F_{\sigma,j}(p)$ denote the right side of \eqref{eq:schur-fixedpoint} at a site. Its derivative is
+\begin{equation}\label{eq:fiber-contraction-derivative}
+ \partial_p\mathcal F_{\sigma,j}(p)
+ =-\frac{Y_j+\sigma_j\varepsilon_np}
+        {\sqrt{4-(Y_j+\sigma_j\varepsilon_np)^2}}.
+\end{equation}
+On the ball \eqref{eq:fiber-q-window}, this is $O(L_n\sqrt{\Lambda_n}/n^2)$. Since $\norm{\mathsf Jq}_{p,n}\le2\norm q_{p,n}$, the fixed-point map has the same small Lipschitz bound, up to a factor two, in every normalized $\ell^p$ norm. At $q=A_n\sigma$ its displacement is bounded by
+\[
+ C\left(\frac{L_n}{n}+\frac{L_n^2\Lambda_n}{n^2}\right)
+ \le\frac{CL_n}{n}.
+\]
+Increasing the fixed constant in the radius makes the map a contraction of the ball into itself. It preserves antiperiodicity. The contraction and the implicit function theorem prove existence, uniqueness, and smooth dependence. Equivalently, one can solve a contraction for the two real components of $\widehat q_1$ and then recover every $q_j$ from \eqref{eq:schur-fixedpoint}.
+
+We next verify feasibility. The edge identity gives
+\[
+ |d_j+d_{j+1}+\sigma_j\dd C_{\sigma,j}|^2=4,
+ \qquad X_j+\sigma_j\varepsilon_nq_j>0.
+\]
+Rotate to the mean direction of the semidiameters, and write
+\begin{equation}\label{eq:fiber-rotated-fields}
+ r=q\cos\vartheta+p\sin\vartheta,\qquad
+ s=p\cos\vartheta-q\sin\vartheta,\qquad
+ J=\sqrt{4-\varepsilon_n^2s^2}.
+\end{equation}
+Then
+\begin{equation}\label{eq:fiber-width}
+ r=\sigma\kappa_n(J-L),\qquad
+ J_j-L_j=a^2+O(L_n/n^3+L_n^2/n^4)>0.
+\end{equation}
+All matching lengths are two, and the unselected adjacent crossing is strictly shorter. The same estimates yield
+\begin{equation}\label{eq:fiber-pointwise}
+ \norm q_\infty\le C,\qquad \norm p_\infty\le CL_n,\qquad
+ \norm{\dd C_\sigma}_\infty\le CL_n/n^2,\qquad
+ \norm{C_\sigma}_\infty\le C/n,\qquad \A(C_\sigma)\le C.
+\end{equation}
+For the center supremum, use the special lift estimate in \eqref{eq:additional-norms} and the bound for $v$; no integration of parameter derivatives is required.
+
+We must also check the nonlocal pairs at the scale of $\UU$. Project $k$ consecutive center increments onto the mean direction of $d_j,d_{j+k}$. By \eqref{eq:fiber-width}, each normal increment is at most
+$a^2+O(L_n/n^3+L_n^2/n^4)$. Its tangential component has size $O(L_n/n^2)$ and acquires an additional projection factor $O(k/n)$. Also
+$|\theta_{j+k}-\theta_j|\le CL_nk/n^2$. The squared-length calculation, as in \eqref{eq:nonlocal-bound}, gives
+\begin{equation}\label{eq:fiber-nonlocal}
+ \begin{split}
+ |d_j+d_{j+k}\pm(C_{j+k}-C_j)|^2
+ \le{}&4-4\sin^2(ka)+\frac{4\pi^2k}{n^2}\\
+ &+Ck^2\left(\frac{L_n}{n^3}+\frac{L_n^2}{n^4}\right),
+ \qquad 2\le k\le m-1.
+ \end{split}
+\end{equation}
+For $k=2$ the leading deficit is $8\pi^2/n^2$. For $k\ge3$, use
+$\sin(ka)\ge2k/n$ and
+$16k^2-4\pi^2k\ge(16-4\pi^2/3)k^2>0$.
+The errors are uniformly smaller because $L_n/n\to0$. These are all the remaining possible pairs. Finally, the identities in \eqref{eq:fiber-schur-identities} follow from the definition of $C_\sigma$ and Corollary~\ref{cor:schur}.
+\end{proof}
+
+\begin{corollary}[Entry of a maximizer]\label{cor:fiber-entry}
+Every sufficiently large even-order maximizer, in the mean-center and mean-angle gauge, is $\mathcal Z_\sigma(\theta,v)$ for its active word and for parameters satisfying
+\begin{equation}\label{eq:fiber-inner}
+ \E(\theta)+\A(v)\le K/n^2,
+\end{equation}
+where $K$ is independent of the maximizer.
+\end{corollary}
+\begin{proof}
+Take $v=\Pi C$. Estimate~\eqref{eq:physical-fiber-input} gives \eqref{eq:fiber-inner}. The saturated selected crossings satisfy the positive-root equations \eqref{eq:schur-fixedpoint}. Their expansion at the physical scale gives
+$\norm{q(C)-A_n\sigma}_\infty\le C/n$. Uniqueness in Proposition~\ref{prop:schur-chart} reconstructs the original configuration.
+\end{proof}
+
+\subsection{The objective on a fiber}
+The Schur splitting and antipodal pairing give the exact identity
+\begin{equation}\label{eq:fiber-master}
+ \Psi_\sigma=F(d)-n\log n+V_n(q_\sigma)+P(v)+\mathscr R_d(C_\sigma),
+ \qquad \mathscr R_d(C)=F(d+C)-F(d)-P(C).
+\end{equation}
+This will be used for both concavity and comparison of words. It is useful to express the last term by a single analytic function. For each pair put
+\[
+ u=\frac{C_i-C_j}{w_i-w_j},\qquad
+ x=\frac{(d-w)_i-(d-w)_j}{w_i-w_j},\qquad
+ R(u,x)=\log\left(1-\frac{u^2}{(1+x)^2}\right)+u^2.
+\]
+The logarithm is the branch equal to zero at $u=0$, and
+$\mathscr R_d(C)=\Re\sum_{i<j}R(u_{ij},x_{ij})$. Near the origin,
+\begin{equation}\label{eq:fiber-Rbounds}
+ \begin{gathered}
+ |R_u|\le C|u|(|x|+|u|^2),\qquad |R_x|\le C|u|^2,\\
+ |R_{uu}|\le C(|x|+|u|^2),\qquad
+ |R_{ux}|\le C|u|,\qquad |R_{xx}|\le C|u|^2.
+ \end{gathered}
+\end{equation}
+These follow by differentiating the displayed expression. They control the change in the true denominators and all terms of degree at least four at the same time.
+
+\subsection{Derivatives of the normal field}
+Consider a line $(\theta+t\eta,v+th)$ in $\UU$, where $h\in\HH$ and $\eta$ is real, mean-zero, and half-periodic. Put $A=\A(h)$ and $E=\E(\eta)$. The two different bounds for $q''$ below have different roles: its averaged absolute value controls the scalar quadratic term, while its $\ell^2$ norm controls the nonlinear remainder.
+
+\begin{lemma}\label{lem:normal-derivatives}
+Uniformly in the base point, direction, and word,
+\begin{align}
+ \norm{q'}_n&\le C\left(\frac{\sqrt E}{\sqrt n}
+        +\frac{L_n\sqrt{\Lambda_n}\sqrt A}{n^{3/2}}\right),
+         \label{eq:fiber-qprime}\\
+ \norm{q''}_{1,n}&\le C\left(\frac{A+E}{n}
+                               +\frac{\sqrt{AE}}{\sqrt n}\right),
+         \label{eq:fiber-qsecond1}\\
+ \norm{q''}_n&\le C\sqrt{\frac{\Lambda_n}{n}}(A+E).
+         \label{eq:fiber-qsecond2}
+\end{align}
+\end{lemma}
+\begin{proof}
+Use $r,s,J$ from \eqref{eq:fiber-rotated-fields}. Set
+\[
+ u_j=\frac{\eta_j+\eta_{j+1}}2,\qquad e_j=\dd\eta_j,\qquad p_h=p(h),
+\]
+and define the coefficient fields
+\[
+ \alpha_j=\cos\vartheta_j-\sigma_j\varepsilon_n(s_j/J_j)\sin\vartheta_j,
+ \qquad
+ \beta_j=\sin\vartheta_j+\sigma_j\varepsilon_n(s_j/J_j)\cos\vartheta_j.
+\]
+The operator
+$\mathcal M=\operatorname{diag}(\alpha)+\operatorname{diag}(\beta)\mathsf J$
+is $I+O(L_n\sqrt{\Lambda_n}/n^2)$ in every normalized $\ell^p$ norm. Its inverse has norm at most two for all sufficiently large $n$.
+
+Differentiate $r+\sigma\kappa_nL-\sigma\kappa_nJ=0$. The first derivative is
+\begin{equation}\label{eq:fiber-qprime-exact}
+ \mathcal Mq'=\sigma\kappa_n\sin a_j\,e_j
+              -\beta_jp_{h,j}-(L_j/J_j)s_ju_j.
+\end{equation}
+The norm estimates give
+\[
+ \norm e_n\le C\sqrt E/n^{3/2},\qquad
+ \norm u_n\le C\sqrt E/n,\qquad
+ \norm{p_h}_n\le C\sqrt{nA},\qquad
+ \norm{p_h}_\infty\le Cn\sqrt A.
+\]
+Since $s=O(L_n)$, inversion proves \eqref{eq:fiber-qprime}. The same equation gives
+\[
+ \norm{q'}_\infty
+ \le C\left(\sqrt E+\frac{L_n\sqrt{\Lambda_n}\sqrt A}{n}\right).
+\]
+
+To differentiate a second time, put
+\[
+ U=q'\cos\vartheta+p'\sin\vartheta,\qquad
+ T=p'\cos\vartheta-q'\sin\vartheta,\qquad
+ p'=\mathsf Jq'+p_h,\qquad s'=T-ru.
+\]
+Direct differentiation gives
+\begin{equation}\label{eq:fiber-qsecond-exact}
+ \begin{split}
+ \mathcal Mq''={}&\frac{\sigma\kappa_n\cos a_j}{2}e_j^2
+                  -2T_ju_j+r_ju_j^2\\
+ &+\frac{\sigma\varepsilon_ns_j}{J_j}(2U_ju_j+s_ju_j^2)
+                  -\frac{4\sigma\varepsilon_n}{J_j^3}(s_j')^2.
+ \end{split}
+\end{equation}
+The frame-rotation terms have already been combined in this identity. In normalized $\ell^1$, the largest contributions are bounded by
+\[
+ n^2\norm e_n^2\le CE/n,\qquad
+ \norm{p'}_n\norm u_n\le C\sqrt{AE/n}+CE/n^{3/2},\qquad
+ \varepsilon_n\norm{s'}_n^2\le CA/n+CE/n^3.
+\]
+All other terms are smaller, using $r=O(1)$, $s=O(L_n)$ and $\varepsilon_n=O(n^{-2})$. Inversion of $\mathcal M$ yields \eqref{eq:fiber-qsecond1}.
+
+For the $\ell^2$ estimate, also use
+\[
+ \begin{gathered}
+ \norm e_\infty\le C\sqrt E/n,\qquad
+ \norm u_\infty\le C\sqrt{\Lambda_n E}/n,\\
+ \norm{p'}_n\le C(\sqrt{nA}+\sqrt{E/n}),\qquad
+ \norm{s'}_\infty\le C(n\sqrt A+\sqrt{E/n}).
+ \end{gathered}
+\]
+In particular,
+$n^2\norm{e^2}_n\le CE/\sqrt n$,
+$\norm{Tu}_n\le C\sqrt{\Lambda_n AE/n}+o(E/n)$, and
+$\varepsilon_n\norm{(s')^2}_n\le C(A+E)/\sqrt n$.
+Apply the bounded inverse in \eqref{eq:fiber-qsecond-exact} to obtain
+\eqref{eq:fiber-qsecond2}.
+\end{proof}
+
+\begin{proposition}[Strict concavity]\label{prop:fiber-concavity}
+For all sufficiently large even $n$, every line in $\UU$ satisfies
+\begin{equation}\label{eq:fiber-concavity}
+ \Psi_\sigma''=2P(h)-2\E(\eta)
+       +O(n^{-1/2})\bigl(\A(h)+\E(\eta)\bigr)
+ \le-c\bigl(\A(h)+\E(\eta)\bigr).
+\end{equation}
+The constants are independent of $\sigma$ and of the base point.
+\end{proposition}
+\begin{proof}
+We differentiate \eqref{eq:fiber-master}. For the circular part,
+\[
+ F(d)''=-2(1+O(L_n/n))E.
+\]
+The scalar quadratic form satisfies
+\[
+ \frac{d^2}{dt^2}V_n(q)
+ =\av{q'T_nq'}+\av{(T_nq)q''}
+ =O(n^{-1/2})(A+E),
+\]
+by Lemma~\ref{lem:normal-derivatives} and $\norm{T_nq}_\infty\le C$.
+The free-center contribution is exactly $2P(h)$.
+
+For the last term of \eqref{eq:fiber-master}, the pair quotients obey
+\[
+ \max(|u|+|x|)\le CL_n/n,\qquad
+ \sum_{i<j}|u_{ij}|^2\le C,\qquad
+ \sum_{i<j}|x_{ij}|^2\le CL_n^2/n^2.
+\]
+The velocities and accelerations are
+\[
+ C'=c^0(q')+h,\quad C''=c^0(q''),\qquad
+ d'=id\eta,\quad d''=-d\eta^2.
+\]
+Consequently,
+\[
+ \A(C')\le C(A+E),\qquad
+ \sqrt{\A(C'')}\le\norm{q''}_n,\qquad
+ \A(d')\le CE,\qquad
+ \sqrt{\A(d'')}\le C\sqrt{\Lambda_n}E/n.
+\]
+The angular estimates follow by applying \eqref{eq:product-energy} and the mean-zero norm bounds to $d\eta$ and $d\eta^2$. The derivative bounds \eqref{eq:fiber-Rbounds} and Cauchy--Schwarz now give
+\[
+ |\mathscr R_d(C)''|
+ \le C\left[\frac{L_n}{n}(A+E)
+       +\frac{L_n^2}{n^2}\sqrt{\A(C'')}
+       +\frac{L_n}{n}\sqrt{\A(d'')}\right]
+ =O(n^{-1/2})(A+E).
+\]
+This estimate includes the acceleration terms. Combining the four contributions proves the expansion in \eqref{eq:fiber-concavity}. Finally,
+$2P(h)\le-\A(h)/3$ by Corollary~\ref{cor:schur}, so the error is absorbed for sufficiently large $n$.
+\end{proof}
+
+There is at most one stationary point of $\Psi_\sigma$ in $\UU$. This assertion concerns a fixed word and a convex parameter domain. It does not assert convexity of the union of graph strata or existence of a stationary point for every word.
+
+\subsection{Comparison at the same parameters}
+For each word write
+\[
+ f_\sigma=A_n\sigma,\qquad g_\sigma=T_nf_\sigma,\qquad
+ k_\sigma=\sigma g_\sigma.
+\]
+The next proposition is the estimate that transfers the finite improving move to geometry.
+
+\begin{proposition}[Local comparison]\label{prop:relative-fiber}
+Fix $K>0$ and an integer $s_0\ge0$. Suppose $d_H(\sigma,\tau)\le s_0$ and
+$\E(\theta)+\A(v)\le K/n^2$. At these same parameters,
+\begin{equation}\label{eq:relative-coupled}
+ \begin{split}
+ \Psi_\sigma-\Psi_\tau={}&V_n(f_\sigma)-V_n(f_\tau)\\
+ &+\frac12\sum_j(k_{\sigma,j}-k_{\tau,j})\dd\theta_j
+   +O_{K,s_0}(n^{-5/2}).
+ \end{split}
+\end{equation}
+If both words have deficit at most $C_0/n^2$, then
+\begin{equation}\label{eq:relative-fiber}
+ \Psi_\sigma(\theta,v)-\Psi_\tau(\theta,v)
+ =V_n(f_\sigma)-V_n(f_\tau)+O_{C_0,K,s_0}(n^{-5/2}).
+\end{equation}
+Both configurations are exactly feasible.
+\end{proposition}
+\begin{proof}
+At an unchanged site, the difference of the fixed-point equations has the small coefficient in \eqref{eq:fiber-contraction-derivative}; at a changed site both fields are bounded. Absorbing the unchanged-site term in normalized $\ell^1$ gives
+\begin{equation}\label{eq:fiber-word-difference}
+ \norm{q_\sigma-q_\tau}_{1,n}\le C_{K,s_0}/n,\qquad
+ \norm{\mathsf J(q_\sigma-q_\tau)}_\infty\le C_{K,s_0}/n,\qquad
+ \A(C_\sigma-C_\tau)\le C_{K,s_0}/n.
+\end{equation}
+For the last inequality, the same argument gives
+$\norm{q_\sigma-q_\tau}_n=O_{K,s_0}(n^{-1/2})$, and
+$C_\sigma-C_\tau=c^0(q_\sigma-q_\tau)$.
+
+Put $\eta=\dd\theta$. The rotated equations \eqref{eq:fiber-width} give the exact expansion
+\begin{equation}\label{eq:fiber-normal-expansion}
+ \begin{split}
+ q_\sigma&=f_\sigma+\tfrac n2\sigma\eta+e_\sigma,\\
+ e_\sigma&=\sigma a_\theta-p_\sigma\tan\vartheta
+  -\sigma\varepsilon_n\sec\vartheta\,
+                   \frac{s_\sigma^2}{2+J_\sigma},\\
+ a_{\theta,j}&=\kappa_n\bigl[(2-L_j)\sec\vartheta_j
+                              -R_0-\sin a\,\eta_j\bigr].
+ \end{split}
+\end{equation}
+At the fixed inner scale, $p_\sigma,s_\sigma=O_K(1)$,
+$\norm\vartheta_n=O_K(n^{-2})$,
+$\norm\eta_n=O_K(n^{-5/2})$, and
+$\norm{a_\theta}_\infty=O_K(n^{-2})$. It follows that
+\begin{equation}\label{eq:fiber-correction-bounds}
+ \norm{e_\sigma}_n\le C_Kn^{-2},\qquad
+ \norm{e_\sigma-e_\tau}_{1,n}\le C_{K,s_0}n^{-3}.
+\end{equation}
+For the difference estimate, a direct sign change is supported at at most $2s_0$ full-period sites. Also
+$p_\sigma-p_\tau=\mathsf J(q_\sigma-q_\tau)=O(n^{-1})$ and
+$s_\sigma-s_\tau=O(n^{-1})$.
+In the product with $\tan\vartheta$, use
+$\norm\vartheta_{1,n}=O(n^{-2})$ rather than its supremum.
+
+Now expand the scalar quadratic form in \eqref{eq:fiber-schur-identities}:
+\begin{equation}\label{eq:fiber-quadratic-comparison}
+ P(C_\sigma)=V_n(f_\sigma)+P(v)
+       +\frac12\sum_j k_{\sigma,j}\eta_j
+       +\av{g_\sigma e_\sigma}+O_K(n^{-3}).
+\end{equation}
+The term $P(v)$ is common to the two words. The scalar correction may be $O(n^{-2})$ for an individual word, but its difference is smaller. Indeed,
+\[
+ \begin{split}
+ \av{g_\sigma e_\sigma}-\av{g_\tau e_\tau}
+ ={}&\av{(g_\sigma-g_\tau)e_\sigma}
+       +\av{g_\tau(e_\sigma-e_\tau)},\\
+ \bigl|\av{g_\sigma e_\sigma}-\av{g_\tau e_\tau}\bigr|
+ \le{}&C_{K,s_0}n^{-3},
+ \end{split}
+\]
+using $\norm{g_\sigma-g_\tau}_n\le C_{s_0}/n$ from
+\eqref{eq:additional-norms}, $\norm{g_\tau}_\infty\le C$, and
+\eqref{eq:fiber-correction-bounds}.
+
+It remains to compare the nonlinear remainders. On the center segment joining the two configurations, $d$ is fixed, the center chord quotients are $O_K(n^{-1})$, and
+$\A(d-w)\le C_K/n^2$. The bound for $R_u$ in
+\eqref{eq:fiber-Rbounds} gives
+\[
+ |D\mathscr R_d(C)[H]|\le C_Kn^{-2}\sqrt{\A(H)}.
+\]
+Integrating with $H=C_\sigma-C_\tau$ and using
+\eqref{eq:fiber-word-difference} gives a remainder difference
+$O_{K,s_0}(n^{-5/2})$. The common term $F(d)$ cancels. Subtracting
+\eqref{eq:fiber-quadratic-comparison} proves \eqref{eq:relative-coupled}.
+
+For near-maximizing vertices, Corollary~\ref{cor:sign-consistency} gives
+$k_\sigma=|g_\sigma|$ and $k_\tau=|g_\tau|$. Therefore
+\[
+ \norm{k_\sigma-k_\tau}_n\le\norm{g_\sigma-g_\tau}_n\le C_{s_0}/n.
+\]
+Cauchy--Schwarz and $\norm{\dd\theta}_n\le C_Kn^{-5/2}$ bound the angular sum by
+$n\norm{k_\sigma-k_\tau}_n\norm{\dd\theta}_n=O_{K,s_0}(n^{-5/2})$.
+This proves \eqref{eq:relative-fiber}. Feasibility is supplied by
+Proposition~\ref{prop:schur-chart}.
+\end{proof}
+
+% END sections/09_fibers.tex
+
+% BEGIN sections/10_exact.tex
+\section{Exact selection and geometric consequences}\label{sec:exact}
+We now combine the two-site improvement with the relative estimate on common coordinates. The proof of exact graph selection uses one improving move. Strict concavity is needed only after that discrete choice has been made.
+
+\subsection{Selection of the balanced word}
+Let $z$ be an even-order global maximizer. Propositions~\ref{prop:pressure} and \ref{prop:active} give its complete diameter graph $E_\sigma$ and
+\[
+ 0\le B_n-V_n(A_n\sigma)\le C_0/n^2.
+\]
+By Corollary~\ref{cor:fiber-entry}, the actual configuration is
+$\mathcal Z_\sigma(\theta,v)$ with $\E(\theta)+\A(v)\le K/n^2$. Both constants are independent of $z$ and $n$.
+
+If $\sigma$ is not balanced, Proposition~\ref{prop:finite-improvement} gives a word $\tau$ differing at at most two independent sites and satisfying
+\[
+ V_n(A_n\tau)-V_n(A_n\sigma)\ge c_*/n^2.
+\]
+The improvement ensures that $\tau$ has the same deficit bound. Keeping the parameters $(\theta,v)$ fixed, Proposition~\ref{prop:relative-fiber} gives
+\begin{equation}\label{eq:final-integer-comparison}
+ F(\mathcal Z_\tau(\theta,v))-F(\mathcal Z_\sigma(\theta,v))
+ \ge c_*/n^2-C_{C_0,K}n^{-5/2}>0
+\end{equation}
+for sufficiently large $n$. Both configurations are feasible, contradicting maximality. The active word is therefore balanced.
+
+\subsection{Coordinate symmetries and uniqueness}
+We record the behavior of the common coordinates under the relabelings used to align balanced words.
+
+\begin{lemma}[Equivariance]\label{lem:equivariance}
+Let $\omega=e^{2\pi i/n}$. A cyclic relabeling by $k$ with compensating rotation acts on the center and angle variables by
+\[
+ C_j\mapsto\omega^{-k}C_{j+k},\qquad
+ \theta_j\mapsto\theta_{j+k}.
+\]
+Its edge fields are $q_j\mapsto q_{j+k}$ and $p_j\mapsto p_{j+k}$. Reflection acts by
+\[
+ C_j\mapsto\overline{C_{-j}},\qquad
+ \theta_j\mapsto-\theta_{-j},\qquad
+ q_j\mapsto-q_{-j-1},\qquad p_j\mapsto p_{-j-1}.
+\]
+The Schur projection intertwines these actions, and the energies and domain $\UU$ are preserved. The corresponding words are $\sigma_{j+k}$ and $-\sigma_{-j-1}$.
+\end{lemma}
+\begin{proof}
+Substitute the transformed increments into
+$\dd C_j=\varepsilon_ne^{i\mu_j}(q_j+ip_j)$.
+For a cyclic shift, $e^{i\mu_{j+k}}=\omega^ke^{i\mu_j}$, which gives the asserted translated fields. For reflection,
+$\dd\overline{C_{-j}}=-\overline{\dd C_{-j-1}}$ and
+$\mu_{-j-1}=-\mu_j$, giving the displayed signs. The first-harmonic relation $p=\mathsf Jq+p^\perp$ is preserved. Thus the optimal lift transforms in the same way, and so does $\Pi C=C-c^0(q(C))$. The energy assertions follow by relabeling the pair sums; the normalizing means remain zero. Finally the selected crossing equations give the stated action on the words.
+\end{proof}
+
+After these relabelings, all global maximizers belong to the same fiber for the canonical balanced word. Their parameters lie in a fixed inner ball and hence in the interior of $\UU$. Since every nearby parameter value is feasible, each is a stationary point of $\Psi_{\sigma^{\bal}}$. Proposition~\ref{prop:fiber-concavity} allows at most one such point. This proves uniqueness in the mean-center and mean-angle gauge, and hence uniqueness up to Euclidean isometry and relabeling.
+
+The preceding arguments apply to every sequence of maximizers whose orders tend to infinity. If no common threshold existed, choose a counterexample at each of an unbounded sequence of orders. The localization, pressure, active-set, finite improvement, and common-coordinate estimates would all apply along this sequence, giving the same contradiction. This proves the eventual form of Theorem~\ref{thm:main}. Its displayed sufficient thresholds follow from the quantitative Lean estimates described in Section~\ref{sec:perimeter} and Appendix~\ref{app:formalisation}.
+
+\subsection{The diameter graph and its symmetries}
+The degree formula \eqref{eq:degree} shows that six alternating transitions give three leaves and three vertices of degree three; all other vertices have degree two. Every leaf is attached by a matching edge to a degree-three vertex. Contracting the matching edges gives the cyclic half-period index graph, so $E_\sigma$ is connected. Deleting the three leaves therefore leaves a connected graph of degree two, namely $C_{n-3}$. A block of length $r_i$ contributes $r_i$ crossing edges and $r_i-1$ matching edges to the cycle, giving arc length $2r_i-1$.
+
+For reference, the three cases are
+\begin{center}
+\begin{tabular}{@{}ccc@{}}
+\toprule
+Order & Half-circle block lengths & Cycle-arc lengths\\
+\midrule
+$6k$ & $(k,k,k)$ & $(2k-1,2k-1,2k-1)$\\
+$6k+2$ & $(k,k+1,k)$ & $(2k-1,2k+1,2k-1)$\\
+$6k+4$ & $(k+1,k,k+1)$ & $(2k+1,2k-1,2k+1)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The canonical word is fixed by $\sigma_j\mapsto-\sigma_{-j-1}$. If $6\mid n$, it is also fixed by the shift $j\mapsto j+n/3$. Apply the corresponding transformations from Lemma~\ref{lem:equivariance} to the unique maximizer. The transformed configurations have the same word and objective and remain in $\UU$, so uniqueness gives
+\begin{equation}\label{eq:symmetries}
+ z_{-j}=\overline{z_j},\qquad
+ z_{j+n/3}=e^{2\pi i/3}z_j\quad(6\mid n)
+\end{equation}
+in the centered analytic gauge. The symmetries are consequences of uniqueness; they were not imposed on the feasible configurations.
+
+\subsection{The normalized limits}
+\begin{proof}[Proof of Corollary~\ref{thm:limits}]
+The pressure estimate and Corollary~\ref{cor:model-maximum} give
+\[
+ \log(M_n/n^n)=V_n(A_n\sigma^{\bal})+O(n^{-2}).
+\]
+The balanced words converge, after the corresponding piecewise-constant extension, to the third square wave. Its nonzero positive frequencies are $3r$ for odd $r\ge1$, with coefficient modulus $1/r$. Uniform sampling and the multiplier limit yield
+\begin{equation}\label{eq:limit-series}
+ \lim_{\substack{n\to\infty\\2\mid n}}\log\frac{M_n}{n^n}
+ =\sum_{\substack{r\ge1\\r\text{ odd}}}\frac1{r^2(3r+1)}.
+\end{equation}
+To evaluate the series, keep the convergent differences together:
+\[
+ D=\sum_{\substack{r\ge1\\r\text{ odd}}}
+       \left(\frac1r-\frac1{r+1/3}\right)
+   =\int_0^1\frac{3y^2(1-y)}{1-y^6}\,dy.
+\]
+The decomposition
+\[
+ \frac{3y^2(1-y)}{1-y^6}
+ =\frac1{y+1}+\frac{y+1}{2(y^2-y+1)}
+                 -\frac{3(y+1)}{2(y^2+y+1)}
+\]
+gives $D=\log2-\tfrac34\log3+\pi/(4\sqrt3)$. Since
+\[
+ \frac1{r^2(3r+1)}=\frac1{r^2}
+                    -3\left(\frac1r-\frac1{r+1/3}\right),
+\]
+the right side of \eqref{eq:limit-series} is
+\[
+ \frac{\pi^2}{8}-\frac{\sqrt3\pi}{4}+\frac94\log3-3\log2.
+\]
+Exponentiation proves \eqref{eq:even-limit}. The odd limit follows by expanding the exact formula \eqref{eq:odd}.
+\end{proof}
+
+Only the pressure approximation and the finite maximum are needed for this limit calculation. Exact graph selection and uniqueness address the stronger conclusion that the maximizing configuration itself is determined for each sufficiently large order.
+
+% END sections/10_exact.tex
+
+% BEGIN sections/11_algebraic.tex
+\section{The algebraic characterization}\label{sec:algebraic}
+We finish by specifying the unique even-order maximizer as a nonsingular solution of a square algebraic system. The equations express stationarity on the balanced active graph. A separate energy inequality specifies the branch; it is not necessary to impose the full list of nonedge diameter inequalities.
+
+\subsection{A rational chart}
+Fix $\sigma=\sigma^{\bal}$ and use the base-edge gauge
+\begin{equation}\label{eq:base-gauge}
+ d_0=1,\qquad C_0=0,\qquad z_0=1,\qquad z_m=-1.
+\end{equation}
+This gauge fixes rigid motions without requiring the centroid to vanish. Let
+\[
+ \mathcal R(t)=\frac{1+it}{1-it}
+              =\frac{1-t^2+2it}{1+t^2}.
+\]
+Take real parameters $x_j$ for $1\le j<m$ and $y_j$ for $0\le j<m$, and define
+\begin{equation}\label{eq:rational-chart}
+ \begin{gathered}
+ d_j=w_j\mathcal R(x_j),\qquad x_0=0,\qquad d_m=-d_0,\qquad
+ U_j=e^{i\mu_j}\mathcal R(y_j),\\
+ B_j=\sigma_j(2U_j-d_j-d_{j+1}),\qquad
+ H=\sum_{j<m}B_j,\\
+ C_0=0,\qquad C_j=\sum_{t<j}B_t,\qquad
+ z_j=C_j+d_j,\quad z_{j+m}=C_j-d_j.
+ \end{gathered}
+\end{equation}
+The equation $H=0$ imposes two real closure conditions. On this set, the matching and selected crossing lengths are identically two. There are $n-1$ real geometric parameters
+\[
+ X=(x_1,\ldots,x_{m-1},y_0,\ldots,y_{m-1}).
+\]
+With two real multipliers, the stationary equations are
+\begin{equation}\label{eq:rational-system}
+ \begin{split}
+ \partial_{X_\ell}F(z(X))
+ &=\lambda_1\partial_{X_\ell}\Re H(X)
+   +\lambda_2\partial_{X_\ell}\Im H(X),\qquad 1\le\ell\le n-1,\\
+ \Re H(X)&=\Im H(X)=0.
+ \end{split}
+\end{equation}
+This is a square system with $n+1$ real variables. Writing $s_{ij}=|z_i-z_j|^2$, its derivatives are the rational functions
+\begin{equation}\label{eq:rational-force}
+ \partial_{X_\ell}F
+ =\sum_{i<j}\frac{\partial_{X_\ell}s_{ij}}{s_{ij}}
+ =2\sum_{i<j}\Re\frac{\partial_{X_\ell}z_i-\partial_{X_\ell}z_j}{z_i-z_j}.
+\end{equation}
+All coefficients belong to an explicitly specified real algebraic field generated by the real and imaginary parts of $w_j$ and $e^{i\mu_j}$.
+
+\begin{lemma}[Compatibility of coordinates]\label{lem:chart-equivalence}
+On the small positive-root branch, the rational chart on $H=0$ and the fixed-Schur chart describe the same local space, after passing between their specified rigid-motion gauges. They are locally diffeomorphic. Stationarity is equivalent in the two charts, and at a stationary point their constrained Hessians are congruent.
+\end{lemma}
+\begin{proof}
+From a configuration recover
+$d_j=(z_j-z_{j+m})/2$ and $C_j=(z_j+z_{j+m})/2$. The small semidiameter angles are uniquely determined. Subtract their mean and rotate the configuration accordingly, translate the centers to mean zero, and take $v=\Pi C$. The positive crossing equations determine $q$ by Proposition~\ref{prop:schur-chart}, so this recovery is inverse to the fixed-Schur construction.
+
+Conversely, pass from a fixed-Schur configuration to the base-edge gauge by its uniquely determined small rotation and translation. The semidiameters and selected crossing unit vectors are close to their reference directions. Their half-angle coordinates $x_j,y_j$ are therefore unique and smooth, and satisfy \eqref{eq:rational-chart}. The two real closure derivatives have rank two: two of the $y$ derivatives of $H$ point in nonparallel directions near the reference configuration. Thus $H=0$ is a smooth manifold of dimension $n-3$, matching the dimension of $\UU$. The recovered coordinate maps are smooth inverses. The chain rule proves the assertion about stationarity and, at a stationary point, about Hessians.
+\end{proof}
+
+\subsection{One energy window}
+Let the known reference center be
+\[
+ C_n^{\mathrm{ref}}=c^0(A_n\sigma^{\bal}).
+\]
+Extend $x$ and $C$ half-periodically when taking their energies, and set
+\begin{equation}\label{eq:selector-energy}
+ \mathcal Q_n^{\mathrm{sel}}(X)
+ =\E(x)+\A\bigl(C(X)-C_n^{\mathrm{ref}}\bigr).
+\end{equation}
+The second term is translation-invariant. The desired condition is
+\begin{equation}\label{eq:energy-window}
+ \mathcal Q_n^{\mathrm{sel}}(X)<\frac{L_n^2}{8n^2}.
+\end{equation}
+This is a rational inequality, not necessarily a quadratic polynomial in $X$. Its denominators are positive for real parameters, so clearing them gives a single polynomial inequality over the same real algebraic field.
+
+\begin{lemma}[Containment of the window]\label{lem:window-containment}
+For all sufficiently large even $n$, every real point satisfying $H=0$ and \eqref{eq:energy-window} represents a collision-free configuration on the positive-root fixed-Schur fiber for the balanced word. Its mean-center, mean-angle coordinates belong to $\UU$.
+\end{lemma}
+\begin{proof}
+Write $Q=\mathcal Q_n^{\mathrm{sel}}(X)$ and $R=C-C_n^{\mathrm{ref}}$. Since $x_0=0$, applying the mean-zero supremum estimate to $x-\av x$ gives
+\[
+ \norm x_\infty\le\frac Cn\sqrt{\Lambda_nQ}.
+\]
+In the proof only, put
+$\phi_j=2\arctan x_j$, $\alpha=\av\phi$, and $\theta=\phi-\alpha$.
+The derivative bound for $2\arctan$ yields
+\begin{equation}\label{eq:selector-angle}
+ \E(\theta)\le4\E(x),\qquad
+ |\alpha|\le\frac Cn\sqrt{\Lambda_n\E(x)}.
+\end{equation}
+Translate the centers to mean zero and rotate by $e^{-i\alpha}$, obtaining $\widetilde C$. The projection is real-linear, and
+$\Pi C_n^{\mathrm{ref}}=0$. Using its boundedness and
+$\A(C_n^{\mathrm{ref}})\le C$, we obtain
+\[
+ \sqrt{\A(\Pi\widetilde C)}
+ \le\sqrt6\bigl(\sqrt{\A(R)}+C|\alpha|\bigr).
+\]
+Therefore
+\begin{equation}\label{eq:selector-containment}
+ \E(\theta)+\A(\Pi\widetilde C)
+ \le(6+o(1))Q<\frac{L_n^2}{n^2}.
+\end{equation}
+The specific coefficient is useful here: the window uses the fixed denominator eight.
+
+We must also verify the correct crossing branch. The difference estimate gives
+\[
+ \norm{\dd R}_\infty\le C\sqrt Q/n,\qquad
+ \norm{\dd C}_\infty\le C/n^2+C\sqrt Q/n.
+\]
+Together with \eqref{eq:selector-angle}, this makes the reference normal component of
+$d_j+d_{j+1}+\sigma_j\dd C_j$ positive, with direction close to $e^{i\mu_j}$. Thus the exact selected lengths in \eqref{eq:rational-chart} give the positive square root in \eqref{eq:schur-fixedpoint}. Initially the physical edge fields are $O(L_n)$. Substitution into that equation improves the normal estimate to
+\[
+ \norm{q(\widetilde C)-A_n\sigma}_\infty
+ \le C\left(\frac{L_n}{n}+\frac{L_n^2\Lambda_n}{n^2}\right)
+ \le\frac{CL_n}{n}.
+\]
+Contraction uniqueness now places the configuration on the fiber with
+$v=\Pi\widetilde C$ and with parameters in \eqref{eq:selector-containment}.
+
+Every relative chord differs from its regular reference by $O(L_n/n)=o(1)$, so no collision is possible. In particular, all denominators $s_{ij}$ in \eqref{eq:rational-force} are nonzero. The small side windows also follow: $x_j=o(n^{-1})$, while
+$U_j=(d_j+d_{j+1}+\sigma_jB_j)/2$ has reference phase
+$O(L_n\sqrt{\Lambda_n}/n^2)$. From
+$|\mathcal R(y)-1|=2|y|/\sqrt{1+y^2}$ we get $y_j=o(n^{-1})$.
+These are consequences of \eqref{eq:energy-window}, not additional selection conditions.
+\end{proof}
+
+\begin{theorem}[Algebraic selection]\label{prop:algebraic-selection}
+For every even $n\ge n_{\mathrm{even}}$, the rational system \eqref{eq:rational-system} has exactly one real solution satisfying \eqref{eq:energy-window}. Its configuration is the global maximizer in the base-edge gauge. The selected root is nonsingular and algebraic, and its distance product equals \eqref{eq:evenexact}. Clearing the nonzero denominators gives the same nonsingular root of a polynomial system.
+\end{theorem}
+\begin{proof}
+First take the genuine balanced maximizer supplied by Section~\ref{sec:exact}. Its mean-center, mean-angle coordinates satisfy \eqref{eq:physical-fiber-input}. The normal expansion \eqref{eq:fiber-normal-expansion} at the fixed inner scale gives
+\[
+ \norm{q(C)-A_n\sigma}_n=O(n^{-3/2}),\qquad
+ \A(C-C_n^{\mathrm{ref}})
+ \le2\A(\Pi C)+2\norm{q(C)-A_n\sigma}_n^2=O(n^{-2}).
+\]
+Passing to the base-edge gauge rotates by $O(\sqrt{\Lambda_n}/n^2)$. This changes the energy bound by an absorbable cross term and a term $O(\Lambda_n/n^4)$. The half-angle coordinates have $\E(x)=O(n^{-2})$. Hence
+$\mathcal Q_n^{\mathrm{sel}}(X)=O(n^{-2})$, strictly inside the window because $L_n\to\infty$. The closure derivative has full rank, and stationarity gives the two multipliers in \eqref{eq:rational-system}. This proves existence.
+
+Conversely, Lemma~\ref{lem:window-containment} puts every selected real solution on the same fixed-Schur fiber. By Lemma~\ref{lem:chart-equivalence} it is a stationary point of the strictly concave function there. Thus there is at most one such configuration. The base-edge gauge removes the rigid motions, and the independent closure gradients make its multipliers unique.
+
+To prove nonsingularity, let $B$ be the two-row closure derivative and $Q_L$ the constrained Lagrangian Hessian. On $\ker B$, Lemma~\ref{lem:chart-equivalence} identifies $Q_L$ with the strictly negative fiber Hessian. The bordered matrix
+\[
+ \begin{pmatrix}Q_L&-B^{\mathsf T}\\ B&0\end{pmatrix}
+\]
+has trivial kernel: if $(u,\lambda)$ is in the kernel, then $Bu=0$ and
+$u^{\mathsf T}Q_Lu=0$, so $u=0$; full row rank then gives
+$B^{\mathsf T}\lambda=0$ only when $\lambda=0$.
+Multiplying the rational equations by denominators nonzero at the root rescales their Jacobian rows by nonzero factors. Thus the polynomial system is nonsingular there as well.
+
+Finally, a nonsingular root of a polynomial system over an algebraic number field has algebraic coordinates. One way to see this is to suppose that the field generated by the coordinates has positive transcendence degree, choose a nonzero derivation over the coefficient field on a transcendence basis, and extend it through the algebraic part. Differentiating the equations and using their invertible Jacobian forces every coordinate derivative to vanish, a contradiction. The coordinates of $z$ and their distance product are rational functions of the selected parameters, so they are algebraic.
+\end{proof}
+
+The stationary equations may have other real roots outside the specified window. No assertion about them is needed. In the base-edge gauge, the rotational symmetry when $6\mid n$ is centered at the centroid $c_n=n^{-1}\sum_jz_j$:
+\[
+ z_{j+n/3}-c_n=e^{2\pi i/3}(z_j-c_n).
+\]
+The algebraic characterization therefore respects the distinction between the centered analytic gauge and the fixed-edge algebraic gauge.
+
+% END sections/11_algebraic.tex
+
+\appendix
+% BEGIN sections/A_fixed_duals.tex
+\section{The two supporting-function norms}\label{app:fixed-duals}
+We prove $J_{1/2}<9/10$ and $J_1<97/80$, as required in \eqref{eq:fixed-norms}. The kernel equation bounds the number of zeros of each supporting function. Once their signs are fixed, the absolute-value integral depends on five stationary values of an explicit primitive. A ten-row rational table is then sufficient for both bounds.
+
+\subsection{The number of zeros}
+Recall $H_b(u)=\cos3u+b\sin3u-2K(u)$ and $J_b=A\ac{|H_b|}$. The symmetry $H_b(\pi-u)=-H_{-b}(u)$ gives
+\begin{equation}\label{eq:dual-half-interval}
+ J_b=\frac12\left(\int_0^{\pi/2}|H_b(u)|\,du
+                     +\int_0^{\pi/2}|H_{-b}(u)|\,du\right).
+\end{equation}
+The kernel equation in \eqref{eq:kernel-ode} implies
+\[
+ H_b''+H_b=-8(\cos3u+b\sin3u)-\frac{\cos u}{\sin^2u}.
+\]
+With $t=\tan u>0$, multiplication by $t^2(1+t^2)^{3/2}$ converts the right side to
+\begin{equation}\label{eq:dual-polynomial}
+ P_b(t)=8bt^5+23t^4-24bt^3-10t^2-1.
+\end{equation}
+For $b>0$, Descartes' rule bounds the number of positive roots by one, and the signs at zero and infinity show that this root exists. The polynomial $P_{-b}$ has at most two positive roots, while
+\[
+ P_{-b}(0)=-1,\qquad P_{-b}(1)=12+16b>0,\qquad
+ P_{-b}(t)\longrightarrow-\infty.
+\]
+It therefore has exactly two positive roots. In both cases the sign changes and the multiplicity bound make these roots simple.
+
+Let
+\[
+ W_b(u)=\cos u\,H_b'(u)+\sin u\,H_b(u).
+\]
+Then
+\begin{equation}\label{eq:dual-Wronskian}
+ W_b'=\cos u\,(H_b''+H_b),\qquad
+ \left(\frac{H_b}{\cos u}\right)'=\frac{W_b}{\cos^2u}.
+\end{equation}
+At the left endpoint $H_b(u)=\log u+O(1)$ and $W_b(u)\to+\infty$. At the right endpoint, $H_b(\pi/2)=W_b(\pi/2)=-b$.
+
+For $b>0$, the derivative $W_b'$ is first negative and then positive. Its right endpoint value is negative, so $W_b$ crosses zero once, from positive to negative. Hence $H_b/\cos u$ first increases and then decreases, and has at most two zeros. For $-b$, the signs of $W_{-b}'$ are negative, positive, negative. Its last decreasing part stays positive because the right endpoint value is $b>0$. The preceding parts have at most two zeros in all. Rolle's theorem applied to \eqref{eq:dual-Wronskian} therefore gives at most three zeros of $H_{-b}$ in $(0,\pi/2)$.
+
+The signs in Table~\ref{tab:fixed-dual-data} below exhibit two crossings for $H_b$ and three for $H_{-b}$ when $b=1/2,1$. They exhaust the permitted zeros. The sign patterns are therefore $-,+,-$ and $-,+,-,+$. They determine all intervals in the absolute-value integral.
+
+\subsection{The primitive and its stationary values}
+An antiderivative is
+\begin{equation}\label{eq:dual-primitive}
+ \begin{split}
+ Q_b(u)={}&\frac{\sin3u}{3}-\frac b3\cos3u
+ +\sin u\log(2\sin u)\\
+ &+\left(\frac\pi2-u\right)\cos u+\sin u.
+ \end{split}
+\end{equation}
+Its endpoint values, by continuity at zero, are
+\[
+ Q_b(0)=\frac\pi2-\frac b3,\qquad Q_b(\pi/2)=\log2+\frac23.
+\]
+Let $x_1<x_2$ be the zeros of $H_b$ and $y_1<y_2<y_3$ those of $H_{-b}$. Integrating according to the sign patterns gives
+\begin{equation}\label{eq:dual-exact-integral}
+ J_b=\frac\pi2+Q_b(x_2)-Q_b(x_1)
+          +Q_{-b}(y_2)-Q_{-b}(y_1)-Q_{-b}(y_3).
+\end{equation}
+Each root is a stationary point of the primitive. A root bracket of width $1/100$ thus gives a second-order, rather than first-order, error in its contribution to the integral.
+
+In Table~\ref{tab:fixed-dual-data}, each row asserts that $H_{\epsilon b}$ has the indicated endpoint signs on $(a/100,(a+1)/100)$ and that, at $m=(2a+1)/200$,
+\begin{equation}\label{eq:primitive-bracket}
+ \frac{k}{1000}<Q_{\epsilon b}(m)<\frac{k+1}{1000}.
+\end{equation}
+All intervals lie in $[3/50,69/50]$. From \eqref{eq:kernel-derivative},
+\[
+ |K'(u)|\le\frac54+\frac1{2\sin u},\qquad
+ |H_b'(u)|\le\frac{17}{2}+\frac1{\sin u}<26\quad(|b|\le1)
+\]
+on this interval; for the last bound use $\sin u\ge3/50-(3/50)^3/6$. If $\rho$ is the bracketed root, then $Q_b'(\rho)=0$ and
+\begin{equation}\label{eq:primitive-root-error}
+ |Q_b(\rho)-Q_b(m)|\le\frac{26}{2}\left(\frac1{200}\right)^2
+ =\frac{13}{40000}.
+\end{equation}
+
+\begin{table}[htbp]
+\centering
+\caption{Rational brackets used for the two fixed witnesses.}\label{tab:fixed-dual-data}
+\begin{tabular}{@{}ccrclcr@{}}
+\toprule
+$b$ & $\epsilon$ & $a$ & $a+1$ & Endpoint signs & & $k$\\
+\midrule
+$1/2$ & $+$ & 6 & 7 & $-,+$ && 1336\\
+$1/2$ & $+$ & 79 & 80 & $+,-$ && 1861\\
+$1/2$ & $-$ & 9 & 10 & $-,+$ && 1659\\
+$1/2$ & $-$ & 45 & 46 & $+,-$ && 1745\\
+$1/2$ & $-$ & 137 & 138 & $-,+$ && 1310\\
+\addlinespace
+$1$ & $+$ & 6 & 7 & $-,+$ && 1172\\
+$1$ & $+$ & 87 & 88 & $+,-$ && 1996\\
+$1$ & $-$ & 12 & 13 & $-,+$ && 1818\\
+$1$ & $-$ & 25 & 26 & $+,-$ && 1824\\
+$1$ & $-$ & 126 & 127 & $-,+$ && 1194\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Use the upper or lower enclosure from \eqref{eq:primitive-bracket} according to its sign in \eqref{eq:dual-exact-integral}, add the five errors in \eqref{eq:primitive-root-error}, and use $\pi/2<11/7$. This gives
+\begin{align}
+ J_{1/2}
+ &<\frac{11}{7}+\frac{1862-1336+1746-1659-1310}{1000}
+       +\frac{13}{8000}
+ =\frac{49059}{56000}<\frac9{10},\label{eq:Jhalf-bound}\\
+ J_1
+ &<\frac{11}{7}+\frac{1997-1172+1825-1818-1194}{1000}
+       +\frac{13}{8000}
+ =\frac{67819}{56000}<\frac{97}{80}.
+ \label{eq:Jone-bound}
+\end{align}
+Both required inequalities follow with strict rational margins.
+
+\subsection{Rational verification of the table}
+The table can be verified using only rational arithmetic and explicit Taylor remainders. Define
+\[
+ S_{24}(x)=\sum_{j=0}^{23}\frac{(-1)^jx^{2j+1}}{(2j+1)!},\qquad
+ C_{24}(x)=\sum_{j=0}^{23}\frac{(-1)^jx^{2j}}{(2j)!}.
+\]
+For the arguments occurring here,
+\[
+ |\sin x-S_{24}(x)|\le\frac{|x|^{49}}{49!},\qquad
+ |\cos x-C_{24}(x)|\le\frac{|x|^{48}}{48!}.
+\]
+The largest trigonometric argument is $207/50$. For positive rational $x$, put $z=(x-1)/(x+1)$ and use
+\begin{equation}\label{eq:rational-log}
+ \left|\log x-2\sum_{j=0}^{63}\frac{z^{2j+1}}{2j+1}\right|
+ \le\frac{2|z|^{129}}{129(1-z^2)}.
+\end{equation}
+For an interval enclosing $2\sin u$, apply this formula to its endpoints and use monotonicity of the logarithm. Bound $\pi$ using Machin's identity
+\[
+ \pi=16\arctan(1/5)-4\arctan(1/239)
+\]
+and twenty-four terms of each alternating series. The identity itself follows from the tangent addition formula and the relevant quadrant.
+
+The displayed Taylor bounds prove the validity of the enclosures independently of binary floating-point arithmetic. The corresponding Lean theorems are
+\begin{center}
+\small\ttfamily
+StructuralNote.FixedDualTable.certified\_table\\
+StructuralNote.FixedDualNormBounds.half\_dualNorm\_bound\\
+StructuralNote.FixedDualNormBounds.one\_dualNorm\_bound.
+\end{center}
+The first proves the twenty endpoint signs and ten primitive enclosures; the other two prove the resulting integral bounds. The analytic zero count in the first part of the appendix remains a separate part of the proof.
+
+% END sections/A_fixed_duals.tex
+
+
+% BEGIN sections/B_formalisation.tex
+\clearpage
+\section{Formalisation}\label{app:formalisation}
+Theorems~\ref{thm:main} and~\ref{thm:perimeter}, Corollary~\ref{thm:limits}, and the algebraic characterization in Theorem~\ref{prop:algebraic-selection} have been formally proved in Lean~4 \cite{lean4}, using mathlib \cite{mathlib}. The formalisation also proves the active-constraint and positive-multiplier assertions of Proposition~\ref{prop:active}. These statements concern the original geometric optimization problems, including attainment, uniqueness up to isometry and relabeling, the complete diameter graph and its symmetries, and the exact normalized limits. For the algebraic system, the formal statement asserts uniqueness within the specified polynomial window, nonsingularity of the rational and cleared polynomial Jacobians there, and algebraicity. Their mathematical prerequisites are proved in the development or supplied by mathlib.
+
+The formal proof uses an alternative global-localization argument in place of Sections~\ref{sec:roundness}--\ref{sec:gaps} and establishes matching and crossing saturation by feasible local variations before constructing the KKT multipliers. The formalisation establishes the main statements through this alternative proof route.
+
+The public statement combines five conclusions: the diameter and perimeter characterizations, the two normalized parity limits, the selected algebraic certificate, and the unique positive KKT certificate. Its finite-order assertions directly use the constants
+\[
+ \mathtt{regularThreshold}=2^{100\,000\,000},\qquad
+ \mathtt{evenThreshold}=2^{10^{120}}.
+\]
+The definition \texttt{diameterThreshold} selects the former at odd orders and the latter at even orders. The diameter characterization includes attainment and uniqueness up to direct rigid motion and relabeling, the odd exact formula, and the complete even diameter graph and symmetries. The perimeter characterization uses \texttt{regularThreshold} at every order. Explicit localization and uniform local rigidity give this common odd-order and perimeter cutoff, as explained in Section~\ref{sec:perimeter}.
+
+The algebraic certificate is asserted for every even order $2m\ge\mathtt{evenThreshold}$. Its stationary root is unique within the selected polynomial window; the rational and cleared polynomial Jacobians are nonsingular, and the configuration coordinates, pairwise distances, and maximum are algebraic. The quantitative pressure, finite-comparison, coordinate and window estimates are all bounded by the displayed even-order cutoff. The positive KKT certificate uses the same even-order cutoff. The explicit smallness, radial-derivative, pressure-margin and chart estimates produce independent active constraint gradients and a unique strictly positive multiplier family on the original labelled configuration, satisfying stationarity and complementary slackness.
+
+The public proof entry is \texttt{Solution.lean}. The theorem \texttt{Erdos1045.main} proves all five statements together. All finite-order bounds appear directly in these statements.
+
+\FormalizationSource
+% END sections/B_formalisation.tex
+\section*{AI disclosure}
+
+The initial mathematical draft was generated using GPT-6 Pro.
+The Lean~4 formalisation described in Appendix~\ref{app:formalisation}
+was developed using OpenAI Codex agents under human direction.
+The resulting formal proofs were checked by Lean~4.
+The author is responsible for the manuscript and for the correspondence
+between its mathematical statements and the formal statements.
+
+% BEGIN sections/references.tex
+\begin{thebibliography}{99}
+\bibitem{cambie}
+S.~Cambie, A.~Decadt, Y.~Dong, T.~Hu, and Q.~Tang,
+\emph{On the maximum product of distances of diameter $2$ point sets},
+arXiv:2603.07088, 2026.
+
+\bibitem{saff}
+E.~B.~Saff, \emph{Logarithmic potential theory with applications to approximation theory},
+Surveys in Approximation Theory \textbf{5} (2010), 165--200.
+
+\bibitem{ehp}
+P.~Erd\H{o}s, F.~Herzog, and G.~Piranian,
+\emph{Metric properties of polynomials},
+Journal d'Analyse Math\'ematique \textbf{6} (1958), 125--148.
+
+\bibitem{pommerenke}
+Ch.~Pommerenke, \emph{On metric properties of complex polynomials},
+Michigan Mathematical Journal \textbf{8} (1961), no.~2, 97--115.
+
+\bibitem{sothanaphan}
+N.~Sothanaphan, \emph{An improved lower bound to Erd\H{o}s' problem concerning products of distances for fixed diameter},
+arXiv:2512.14251, 2025.
+
+\bibitem{lean4}
+L.~de Moura and S.~Ullrich,
+\emph{The Lean 4 theorem prover and programming language},
+in Automated Deduction---CADE~28,
+Lecture Notes in Computer Science \textbf{12699}, Springer, 2021, 625--635.
+
+\bibitem{mathlib}
+The mathlib Community, \emph{The Lean mathematical library},
+in Proceedings of the 9th ACM SIGPLAN International Conference on Certified Programs and Proofs (CPP~2020), ACM, 2020, 367--381.
+
+\bibitem{danzer-pommerenke}
+L.~Danzer and Ch.~Pommerenke,
+\emph{\"Uber die Diskriminante von Mengen gegebenen Durchmessers},
+Monatshefte f\"ur Mathematik \textbf{71} (1967), 100--113.
+\href{https://doi.org/10.1007/BF01298463}{doi:10.1007/BF01298463}.
+
+\bibitem{reinhardt}
+K.~Reinhardt, \emph{Extremale Polygone gegebenen Durchmessers},
+Jahresbericht der Deutschen Mathematiker-Vereinigung \textbf{31} (1922), 251--270.
+\bibitem{coleski-six}
+\texttt{coleski}, \emph{A Lean-verified proof of the six-point case of Erd\H{o}s \#1045},
+computer-assisted proof and Lean source, 11 September 2026,
+commit \texttt{59ede5a1}.
+\href{https://github.com/coleski/erdos1045-n6/tree/59ede5a12403d62d00fa21b59597dbb6c01fb0a2}{\texttt{github.com/coleski/erdos1045-n6}}.
+\end{thebibliography}
+
+% END sections/references.tex
+
+\end{document}

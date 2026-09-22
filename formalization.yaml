@@ -1,0 +1,113 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mathlib-initiative/formalization.yaml/main/schema/formalization.schema.json
+version: "v0.4"
+project:
+  name: "Eventual maximizers of the planar distance product"
+  description: >-
+    Characterizes planar configurations maximizing the product of squared
+    pairwise distances under diameter or convex-hull perimeter constraints.
+    The diameter result holds for odd orders at least 2^100000000 and even
+    orders at least 2^(10^120), with attainment, direct-rigid uniqueness,
+    the exact odd formula and the canonical even graph and symmetries.
+    The full perimeter characterization holds above 2^100000000.
+    Above the even cutoff the selected stationary polynomial system has a
+    unique nonsingular algebraic root in its specified window. The development
+    also proves both normalized parity limits and unique positive KKT
+    certificates for every even order at least 2^(10^120). This repository
+    contains the paper and its Lean 4 formalization.
+  authors: ["Boyang Hu"]
+  responsible_maintainers: ["Boyang Hu"]
+  license: "Apache-2.0"
+classification:
+  arxiv: ["math.MG", "math.CV"]
+  msc2020: ["52A40", "30C85", "05C62"]
+sources:
+  - title: "Eventual maximizers of the planar distance product"
+    authors: ["Boyang Hu"]
+    type: paper
+    relationship: formalizes
+    location: "paper/Erdos1045.pdf; LaTeX source in paper/Erdos1045.tex"
+    note: >-
+      Manuscript revised September 22, 2026. The accompanying proof snapshot
+      and source information are recorded in docs/SOURCE.md. Its main
+      conclusions are formalized with the proof adaptations described below,
+      including concrete thresholds for the even, odd, perimeter and
+      positive KKT conclusions.
+  - title: "Erdős problem 1045"
+    relationship: background
+    location: "https://www.erdosproblems.com/1045"
+    contributors:
+      - name: "Paul Erdős"
+        role: "problem proposer"
+related_formalizations:
+  - id: "https://github.com/coleski/erdos1045-n6/tree/59ede5a12403d62d00fa21b59597dbb6c01fb0a2"
+    relationship: independent
+    note: >-
+      A Lean-verified proof of the six-point case of Erdos #1045, GitHub user
+      coleski, September 11, 2026. Cited as related work for the exact
+      six-point maximum; this development has no dependency on that project.
+status:
+  scope: >-
+    Erdos1045.main is the conjunction of five fully specified propositions
+    in Challenge.lean. The diameter characterization uses the cutoff
+    2^100000000 for odd orders and 2^(10^120) for even orders, including
+    attainment, direct-rigid uniqueness, the odd exact formula, and the even
+    graph and symmetry data. The perimeter characterization uses 2^100000000.
+    The algebraic certificate uses 2^(10^120) and includes uniqueness and
+    nonsingularity within its selected polynomial window. The remaining
+    propositions are the normalized parity limits and unique positive
+    KKT certificate at the same even-order cutoff 2^(10^120). See README.md for their mathematical content.
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: ["propext", "Classical.choice", "Quot.sound"]
+  main_results: ["Erdos1045.main"]
+automation:
+  methods:
+    - method: agent
+      models: ["GPT-6 Astra", "GPT-5.6 Sol", "GPT-5.6 Luna"]
+      framework: "OpenAI Codex"
+      tool_setup: >-
+        Lean proofs were drafted and revised, mathematical dependencies were
+        inspected, Lean checks were run, and repository packaging was prepared
+        using AI agents.
+      prompting_notes: >-
+        Human-directed formalization of the manuscript, with
+        requests to close assumptions, simplify proofs, and separate statement
+        and proof.
+  notes: >-
+    The initial mathematical draft was generated using GPT-6 Pro. The Lean
+    formalization was developed using OpenAI Codex agents, with human
+    direction of scope and proof-route choices. The resulting formal proofs
+    were checked by Lean 4. The author is responsible for the manuscript
+    and for the correspondence between its mathematical statements and
+    the formal statements.
+fidelity:
+  divergences: >-
+    Global analytic localization uses an exterior-map/Faber route in place of
+    the manuscript's capacity-based localization argument.
+    Activity of constraints is proved using feasible lens-coordinate variations
+    before KKT. Finite-kernel monotonicity uses exact difference identities and
+    function-value convergence. The diameter graph is expressed by the explicit
+    cyclic adjacency predicate CanonicalEvenDiameterAdj. The algebraic
+    certificate specifies the reference construction, polynomial system and
+    window explicitly, and proves existence and uniqueness of the selected root.
+    The explicit even-order extension uses quantitative Fourier, localization,
+    pressure and Schur estimates to prove the displayed integer cutoff.
+    Explicit localization and uniform local rigidity give the smaller common
+    threshold for odd diameter and perimeter maximizers. The quantitative
+    pressure margin, radial derivative and chart estimates also establish
+    unique strictly positive KKT multipliers at the same even-order cutoff.
+review:
+  status: "self-assessed"
+  notes: >-
+    See docs/VALIDATION.md for the verification record.
+alignment:
+  namespace: "Erdos1045"
+  statements:
+    - source: "Diameter and perimeter characterizations, parity limits, algebraic and KKT certificates"
+      lean: "Erdos1045.main"
+      module: "Solution"
+      status: "proved"
+      note: "Five conclusions; finite-order statements carry their proved cutoffs directly. The positive KKT certificate shares the even-order cutoff 2^(10^120)."
+acknowledgements: >-
+  Lean, Mathlib, Comparator, lean4export, and NanoDa.
+  Tooling sources and licence notices are recorded in NOTICE.

@@ -1,0 +1,66 @@
+name: Verify formalization
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      LEAN_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
+        with:
+          build: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+        with:
+          go-version: "1.24.0"
+          cache: false
+      - name: Check submission source layout
+        run: python3 scripts/check_submission.py
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: PalomarRegistry/PalomarSubmission
+          ref: 3561d237dcc4b28482558ad28a64d767d7cc8615
+          path: .cache/palomar-policy
+          persist-credentials: false
+      - name: Validate metadata with the pinned official Palomar validator
+        run: |
+          python3 -m pip install PyYAML==6.0.2
+          python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, '.cache/palomar-policy')
+          from scripts.submission_contract import load_formalization_metadata
+          from scripts.verify_submission import load_comparator_config
+          load_formalization_metadata(Path('formalization.yaml'))
+          load_comparator_config(Path('comparator.json'))
+          PY
+      - name: Free disk space before comparator build
+        run: |
+          df -h
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          sudo apt-get clean
+          df -h
+      - name: Build, compare statements and replay with the Lean kernel
+        run: |
+          export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+          sudo loginctl enable-linger "$(id -un)"
+          sudo systemctl start "user@$(id -u).service"
+          bash scripts/verify-comparator.sh --lean-only
+      - name: Audit the public conclusions and explicit threshold
+        run: python3 verify.py --no-build
